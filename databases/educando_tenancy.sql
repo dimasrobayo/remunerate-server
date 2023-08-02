@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.11
+-- version 4.9.5deb2
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 05-07-2023 a las 14:32:57
--- Versión del servidor: 10.6.12-MariaDB-0ubuntu0.22.10.1
--- Versión de PHP: 7.0.33-65+ubuntu22.04.1+deb.sury.org+1
+-- Tiempo de generación: 02-08-2023 a las 14:44:17
+-- Versión del servidor: 10.10.5-MariaDB-1:10.10.5+maria~ubu2004
+-- Versión de PHP: 8.1.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `multitenant_db`
+-- Base de datos: `educando_tenancy`
 --
 
 -- --------------------------------------------------------
@@ -40,8 +40,9 @@ CREATE TABLE `tenants` (
 --
 
 INSERT INTO `tenants` (`id`, `tenant`, `database_name`, `domain`) VALUES
-(1, 'user1', 'tenant1_db', '192.168.1.105:3000'),
-(2, 'user2', 'tenant2_db', '127.0.0.1:3000');
+(1, 'user1', 'educando_production', '192.168.50.62:4000'),
+(2, 'user2', 'educando_developer', 'localhost:3000'),
+(3, 'user3', 'educando_production', 'localhost:4000');
 
 --
 -- Índices para tablas volcadas
@@ -62,7 +63,7 @@ ALTER TABLE `tenants`
 -- AUTO_INCREMENT de la tabla `tenants`
 --
 ALTER TABLE `tenants`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -6,64 +6,15 @@ const keys = require('../config/keys');
 const storage = require('../utils/cloud_storage');
 
 module.exports = {
-    login(request, response) {
-        const email = request.body.email;
-        const password = request.body.password;
-        
-        User.findByEmail(email, async(error, myUser) => {
-            if(error) {
-                return response.status(501).json({
-                    success: false,
-                    massage: 'Hubo un error con el registro del usuario',
-                    error: error
-                })
-            }
-            
-            if(!myUser) {
-                return response.status(401).json({ // EL CLIENT NO TIENE AUTORIZACION PARA REALIZAR ESTA PETICION
-                    success: false,
-                    message: 'El email no fue encontrado!'
-                })
-            }
-            
-            const isPasswordValid = await bcrypt.compare(password, myUser.password)
-            
-            if(isPasswordValid){
-                const token = jwt.sign({id: myUser.id, email: myUser.email}, keys.secretOrKey, {});
-
-                const data = {
-                    id: myUser.id,
-                    name: myUser.name,
-                    lastname: myUser.lastname,
-                    email: myUser.email,
-                    phone: myUser.phone,
-                    image: myUser.image,
-                    session_token: `JWT ${token}`,
-                    roles: JSON.parse(myUser.roles)
-                }
-                
-                return response.status(201).json({
-                    success: true,
-                    message: 'El usuario fue autenticado',
-                    data:data
-                })
-            }else{
-                return response.status(401).json({
-                    success: false, 
-                    message: 'El password es incorrecto'
-                })
-            }
-        })
-    },
-
     register(request, response) {
-        const user = JSON.parse(request.body.user) // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
+        const user = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
+
         User.create(user, (error, data) => {
             if(error){
                 return response.status(501).json({
                     success: false,
                     message: 'Error con el registro del usuario',
-                    error: error
+                    error: user
                 })
             }
             return response.status(201).json({
@@ -116,6 +67,56 @@ module.exports = {
                 });
             });
 
+        })
+    },
+
+    login(request, response) {
+        const email = request.body.email;
+        const password = request.body.password;
+        
+        User.findByEmail(email, async(error, myUser) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    massage: 'Hubo un error con el registro del usuario',
+                    error: error
+                })
+            }
+            
+            if(!myUser) {
+                return response.status(401).json({ // EL CLIENT NO TIENE AUTORIZACION PARA REALIZAR ESTA PETICION
+                    success: false,
+                    message: 'El email no fue encontrado!'
+                })
+            }
+            
+            const isPasswordValid = await bcrypt.compare(password, myUser.password)
+            
+            if(isPasswordValid){
+                const token = jwt.sign({id: myUser.id, email: myUser.email}, keys.secretOrKey, {});
+
+                const data = {
+                    id: myUser.id,
+                    name: myUser.name,
+                    lastname: myUser.lastname,
+                    email: myUser.email,
+                    phone: myUser.phone,
+                    image: myUser.image,
+                    session_token: `JWT ${token}`,
+                    roles: JSON.parse(myUser.roles)
+                }
+                
+                return response.status(201).json({
+                    success: true,
+                    message: 'El usuario fue autenticado',
+                    data:data
+                })
+            }else{
+                return response.status(401).json({
+                    success: false, 
+                    message: 'El password es incorrecto'
+                })
+            }
         })
     },
 

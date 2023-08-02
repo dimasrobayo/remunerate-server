@@ -11,7 +11,7 @@ const pool = mysql.createPool({
 
 async function tenantMiddleware(request, response, next) {
     const domain = request.headers.host;
-
+    
     try {
         const [rows] = await pool.execute(`SELECT * FROM tenants WHERE domain = '${domain}'`);
 
@@ -23,15 +23,15 @@ async function tenantMiddleware(request, response, next) {
 
         // CONNECTION FOR TENANT
         const connection = await mysql.createConnection({
-        host: 'localhost',
-        user: 'admin',
-        password: 'admin',
+        host: process.env.DB_HOST,
+        user: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
         database: dbSchool_name,
-        });
-
-        // ATTACH THE CONNECTION TO REQUEST.DB
+    });
+    
+    // ATTACH THE CONNECTION TO REQUEST.DB
         request.db = connection;
-
+    
         // GET TO INFO THE TENANT
         request.dbInfo = {
             domain: domain,

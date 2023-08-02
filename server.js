@@ -33,7 +33,14 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-app.use(cors());
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    origin: 'http://localhost:4000',
+    origin: 'http://192.168.50.62:4000',
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(passport.initialize());
 app.use(passport.session());
 require('./config/passport')(passport);
