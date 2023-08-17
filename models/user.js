@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const dbSchool = require('../db');
 const User = {};
 
-
 User.findById = async (id, result) => {
     const connection = await dbSchool.getConnection();
 
@@ -52,6 +51,7 @@ User.findByEmail = async(email, result) => {
             upi.phone,
             upi.image,
             u.password,
+            u.my_color,
             JSON_ARRAYAGG(
                 JSON_OBJECT(
                     'id', CONVERT(r.id, char),
@@ -75,7 +75,69 @@ User.findByEmail = async(email, result) => {
     }
 }
 
-User.create = async (user, result) => {
+User.register = async (user, result) => {
+    const connection = await dbSchool.getConnection();
+    const hash = await bcrypt.hash(user.password, 10);
+
+    try {
+        const [user_personal_info] = await connection.execute(`
+            INSERT INTO
+                user_personal_info(
+                    name,
+                    lastname,
+                    mother_lastname,
+                    type_document,
+                    document_number,
+                    gender,
+                    phone
+                )
+            VALUES(
+                '${user.name}', 
+                '${user.lastname}', 
+                '${user.mother_lastname}', 
+                '${user.type_document}', 
+                '${user.document_number}', 
+                '${user.gender}', 
+                '${user.phone}'
+            )
+        `);
+
+        const [users] = await connection.execute(`
+            INSERT INTO
+                users(
+                    status_user_id,
+                    user_personal_info_id,
+                    email,
+                    password
+                )
+            VALUES(
+                2,
+                ${user_personal_info.insertId},
+                '${user.email}',
+                '${hash}'
+            )
+        `);
+
+        const [user_has_roles] = await connection.execute(`
+            INSERT INTO
+                user_has_roles(
+                    users_id,
+                    roles_id
+                )
+            VALUES(
+                ${users.insertId},
+                ${user.rol}
+            )
+        `);
+        
+        result(null, users.insertId)   
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
+        result(error, null);
+    }
+}
+
+User.registerWithImage = async (user, result) => {
     const connection = await dbSchool.getConnection();
     const {addresses, health_information, social_information, rol} = user;
     const hash = await bcrypt.hash(user.password, 10);
@@ -203,6 +265,45 @@ User.create = async (user, result) => {
         }else{
             result(error, null)
         }
+        
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
+        result(error, null);
+    }
+}
+
+User.findByUsers = async (result) => {
+    const connection = await dbSchool.getConnection();
+
+    try {
+        const [user] = await connection.execute(`
+        SELECT 
+            u.id,
+            upi.name,
+            upi.lastname,
+            u.email,
+            upi.phone,
+            upi.image
+        FROM users AS u
+        INNER JOIN user_has_roles AS uhr ON uhr.users_id = u.id
+        INNER JOIN roles AS r ON r.id = uhr.roles_id
+        INNER JOIN user_personal_info AS upi ON upi.id = u.user_personal_info_id
+        GROUP BY u.id
+        `);
+        
+        result(null, user)
+    } catch (error) {
+        console.error('Error fetching users from tenant database', err);
+        result(error, null);
+    }
+}
+
+User.updateWithImage = async (user, result) => {
+    const connection = await dbSchool.getConnection();
+    const {addresses, health_information, social_information, rol} = user;
+    const hash = await bcrypt.hash(user.password, 10);
+
+    try {
         
     } catch (error) {
         console.error('Error fetching users from tenant database', error);

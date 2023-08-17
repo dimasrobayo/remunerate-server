@@ -1,15 +1,16 @@
-const User = require('../models/user');
+const fs = require('fs');
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Rol = require('../models/rol');
+const User = require('../models/user');
 const keys = require('../config/keys');
-const storage = require('../utils/cloud_storage');
 
 module.exports = {
     register(request, response) {
-        const user = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
+        const { user } = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
 
-        User.create(user, (error, data) => {
+        User.register(user, (error, data) => {
             if(error){
                 return response.status(501).json({
                     success: false,
@@ -26,16 +27,32 @@ module.exports = {
     },
 
     async registerWithImage(request, response) {
-        const user = JSON.parse(request.body.user) // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
+        const { user } = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
         const files = request.files;
 
         if(files.length > 0) {
-            const path = `image_${Date.now()}`;
-            const url = await storage(files[0], path);
+            // DAMOS NOMBRE UNICO A LA IMAGEN PARA EVITAR COLISIONES
+            const fileBuffer = `profile_${Date.now()}`;
 
-            if(url != undefined && url != null) {
-                user.image = url;
-            }
+            // RUTA DONDE SE VA A GUARDAR EL ARCHIVO LOCAL
+            const uploadPath = path.join(__dirname, '../storage/', fileName);
+
+            fs.writeFile(uploadPath, fileBuffer, (error) => {
+                if (error) {
+                    return response.status(501).json({
+                        success: false,
+                        message: 'Error al guardar el registro',
+                        error: error
+                    })
+                }
+            
+                // CONSTRUIR LA URL DEL ARCHIVO PARA APLICARLA A 
+                const fileUrl = '/storage/' + fileName;
+            
+                if (url != undefined && url != null) {
+                    user.image = fileUrl;
+                }
+            });
         }
 
         User.create(user, (error, data) => {
@@ -43,30 +60,14 @@ module.exports = {
                 return response.status(501).json({
                     success: false,
                     message: 'Error con el registro del usuario',
-                    error: error
+                    error: user
                 })
             }
-
-            user.id = `${data}`;
-            const token = jwt.sign({id: user.id, email: user.email}, keys.secretOrKey, {});
-            user.session_token = `JWT ${token}`;
-
-            Rol.create(user.id, 3, (error, data) => {
-                if(error){
-                    return response.status(501).json({
-                        success: false,
-                        message: 'Error con el registro del rol de usuario',
-                        error: error
-                    })
-                }
-                
-                return response.status(201).json({
-                    success: true,
-                    message: 'Registro se realizo correctamente',
-                    data: user // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
-                });
-            });
-
+            return response.status(201).json({
+                success: true,
+                message: 'Registro se realizo correctamente',
+                data: data // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
+            })
         })
     },
 
@@ -102,6 +103,7 @@ module.exports = {
                     email: myUser.email,
                     phone: myUser.phone,
                     image: myUser.image,
+                    myColor: myUser.my_color,
                     session_token: `JWT ${token}`,
                     roles: JSON.parse(myUser.roles)
                 }
@@ -120,19 +122,50 @@ module.exports = {
         })
     },
 
-    async updateWithImage(req, res) {
-        const user = JSON.parse(req.body.user); // CAPTURO LOS DATOS QUE ME ENVIE EL CLIENTE
-        console.log('DATA DEL CLIENTE ', user);
+    findByUsers(request, response) {
+        User.findByUsers((error, data) => {
+            if(error){
+                return response.status(501).json({
+                    success: false,
+                    message: 'Error al obtener los usuarios',
+                    error: error
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Listado de usuarios',
+                data: data // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
+            })
+        })
+    },
 
+    async updateWithImage(req, res) {
+        const user = eq.body.user; // CAPTURO LOS DATOS QUE ME ENVIE EL CLIENTE
         const files = req.files;
 
-        if (files.length > 0) {
-            const path = `image_${Date.now()}`;
-            const url = await storage(files[0], path);
+        if(files.length > 0) {
+            // DAMOS NOMBRE UNICO A LA IMAGEN PARA EVITAR COLISIONES
+            const fileBuffer = `profile_${Date.now()}`;
 
-            if (url != undefined && url != null) {
-                user.image = url;
-            }
+            // RUTA DONDE SE VA A GUARDAR EL ARCHIVO LOCAL
+            const uploadPath = path.join(__dirname, '../storage/', fileName);
+
+            fs.writeFile(uploadPath, fileBuffer, (error) => {
+                if (error) {
+                    return response.status(501).json({
+                        success: false,
+                        message: 'Error al guardar el registro',
+                        error: error
+                    })
+                }
+            
+                // CONSTRUIR LA URL DEL ARCHIVO PARA APLICARLA A 
+                const fileUrl = '/storage/' + fileName;
+            
+                if (url != undefined && url != null) {
+                    user.image = fileUrl;
+                }
+            });
         }
 
         User.updateWithImage(user, (err, data) => {
@@ -179,20 +212,5 @@ module.exports = {
 
         });
 
-    },
-
-    findDeliveryMen(req, res) {
-        User.findDeliveryMen((err, data) => {
-            if (err) {
-                return res.status(501).json({
-                    success: false,
-                    message: 'Hubo un error con al listar los repartidores',
-                    error: err
-                });
-            }
-
-            
-            return res.status(201).json(data);
-        });
     }
 }

@@ -10,7 +10,8 @@ const pool = mysql.createPool({
 });
 
 async function tenantMiddleware(request, response, next) {
-    const domain = request.headers.host;
+    const domain = request.headers.origin;
+    console.log(domain)
     
     try {
         const [rows] = await pool.execute(`SELECT * FROM tenants WHERE domain = '${domain}'`);
