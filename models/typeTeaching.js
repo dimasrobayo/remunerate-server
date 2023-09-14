@@ -1,15 +1,14 @@
-const bcrypt = require('bcryptjs');
 const dbSchool = require('../db');
 const typesTeaching = {};
 
 typesTeaching.getTypeTeaching = async (result) => {
     const connection = await dbSchool.getConnection();
-
+    
     try {
         const [listTypeTeaching] = await connection.execute(`
             SELECT 
                 *
-            FROM types_teaching AS tt
+            FROM sys_types_teachings AS tt
             ORDER BY tt.id
         `);
 
@@ -25,7 +24,7 @@ typesTeaching.create = async (type, result) => {
 
     try {
         const [createTypeTeaching] = await connection.execute(`
-            INSERT INTO types_teaching(
+            INSERT INTO sys_types_teachings(
                 codigo,
                 name
             )VALUES(
@@ -48,7 +47,7 @@ typesTeaching.edit = async (id, result) => {
         const [editTypeTeaching] = await connection.execute(`
             SELECT 
                 *
-            FROM types_teaching AS tt
+            FROM sys_types_teachings AS tt
             WHERE
                 tt.id = ${id}
             ORDER BY tt.id
@@ -62,11 +61,10 @@ typesTeaching.edit = async (id, result) => {
 
 typesTeaching.update = async (type, result) => {
     const connection = await dbSchool.getConnection();
-    console.log(type);
 
     try {
         const [updateTypeTeaching] = await connection.execute(`
-            UPDATE types_teaching
+            UPDATE sys_types_teachings
             SET
                 codigo  = '${type.codigo}',
                 name = '${type.name}',
@@ -87,7 +85,7 @@ typesTeaching.delete = async (id, result) => {
 
     try {
         const [editTypeTeaching] = await connection.execute(`
-            DELETE FROM types_teaching WHERE id = ${id}
+            DELETE FROM sys_types_teachings WHERE id = ${id}
         `)
         result(null, id);
     } catch (error) {

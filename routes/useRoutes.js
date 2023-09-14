@@ -7,9 +7,9 @@ module.exports = (app, upload) => {
     // PUT -> ACTUALIZAR DATOS
     // DELETE -> ELIMINAR DATOS
 
+    app.post('/api/users/login', usersController.login);
     app.post('/api/users/register', usersController.register);
     app.post('/api/users/registerWithImage', upload.array('image', 1), usersController.registerWithImage);
-    app.post('/api/users/login', usersController.login);
     
     // 401 UNAUTHORIZED
     app.get('/api/users/findByUsers', passport.authenticate('jwt', {session: false}), usersController.findByUsers);

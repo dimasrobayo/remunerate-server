@@ -212,17 +212,34 @@ INSERT INTO `user_has_roles` (`users_id`, `roles_id`, `created_at`, `updated_at`
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `types_teaching`
+-- Estructura de tabla para la tabla `sys_types_teachings`
 --
-CREATE TABLE `types_teaching` (
+CREATE TABLE `sys_types_teachings` (
   `id` int(11) NOT NULL,
-  `codigo` VARCHAR(20 NOT NULL),
-  `name` int(11) DEFAULT NULL,
+  `codigo` VARCHAR(20)NOT NULL,
+  `name` VARCHAR(50) NOT NULL,
   `status` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
   `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp(),
   `updated_at` TIMESTAMP NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-ALTER TABLE `types_teaching` ADD PRIMARY KEY (`id`);
-ALTER TABLE `types_teaching` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `sys_types_teachings` ADD PRIMARY KEY (`id`);
+ALTER TABLE `sys_types_teachings` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `sys_grades`
+--
+CREATE TABLE `sys_grades` (
+  	`id` int(11) NOT NULL AUTO_INCREMENT,
+  	`name` varchar(50) DEFAULT NULL,
+  	`code_grade` varchar(20) DEFAULT NULL,
+  	`sys_type_teaching_id` int(11) DEFAULT NULL,
+  	`created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`deleted_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+	FOREIGN KEY(sys_type_teaching_id) REFERENCES sys_types_teachings(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

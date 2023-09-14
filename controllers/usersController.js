@@ -7,7 +7,7 @@ const User = require('../models/user');
 const keys = require('../config/keys');
 
 module.exports = {
-    register(request, response) {
+    async register(request, response) {
         const { user } = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
 
         User.register(user, (error, data) => {
@@ -71,7 +71,7 @@ module.exports = {
         })
     },
 
-    login(request, response) {
+    async login(request, response) {
         const email = request.body.email;
         const password = request.body.password;
         
@@ -130,7 +130,7 @@ module.exports = {
         })
     },
 
-    findByUsers(request, response) {
+    async findByUsers(request, response) {
         User.findByUsers((error, data) => {
             if(error){
                 return response.status(501).json({
@@ -147,7 +147,7 @@ module.exports = {
         })
     },
 
-    findUsersById(request, response) {
+    async findUsersById(request, response) {
         const id = request.params.id;
 
         User.findUsersById(id, (error, data) => {

@@ -3,9 +3,11 @@ const dbSchool = require('../db');
 const User = {};
 
 User.findById = async (id, result) => {
-    const connection = await dbSchool.getConnection();
+    let connection;
 
     try {
+        connection = await dbSchool.getConnection();
+        
         const [user] = await connection.execute(`
         SELECT 
             u.id,
@@ -39,9 +41,11 @@ User.findById = async (id, result) => {
 }
 
 User.findByEmail = async(email, result) => {
-    const connection = await dbSchool.getConnection();
+    let connection;
 
     try {
+        connection = await dbSchool.getConnection();
+        
         const [user] = await connection.query(`
         SELECT 
             u.id,
@@ -121,10 +125,12 @@ User.findByEmail = async(email, result) => {
 }
 
 User.register = async (user, result) => {
-    const connection = await dbSchool.getConnection();
+    let connection;
     const hash = await bcrypt.hash(user.password, 10);
 
     try {
+        connection = await dbSchool.getConnection();
+        
         const [user_personal_info] = await connection.execute(`
             INSERT INTO
                 user_personal_info(
@@ -195,11 +201,13 @@ User.register = async (user, result) => {
 }
 
 User.registerWithImage = async (user, result) => {
-    const connection = await dbSchool.getConnection();
+    let connection;
     const {addresses, health_information, social_information, rol} = user;
     const hash = await bcrypt.hash(user.password, 10);
-
+    
     try {
+        connection = await dbSchool.getConnection();
+        
         const [validateInfo] = await connection.execute(`
             SELECT 
                 upi.document_number
@@ -356,9 +364,11 @@ User.findByUsers = async (result) => {
 }
 
 User.findUsersById = async (id, result) => {
-    const connection = await dbSchool.getConnection();
+    let connection;
 
     try {
+        connection = await dbSchool.getConnection();
+        
         const [user] = await connection.execute(`
         SELECT 
             u.id,
@@ -435,10 +445,12 @@ User.findUsersById = async (id, result) => {
 }
 
 User.updateWithOutImage = async (user, result) => {
-    const connection = await dbSchool.getConnection();
+    let connection;
     const {health_information, social_information, civilian_information, roles} = user;
-
+    
     try {
+        connection = await dbSchool.getConnection();
+        
         await connection.beginTransaction();
             // UPDATE PERSONAL INFO SESSION
             const [user_personal_info] = await connection.execute(`

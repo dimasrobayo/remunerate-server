@@ -23,6 +23,7 @@ app.use(schoolMiddleware);
 */
 const useRoutes = require('./routes/useRoutes');
 const typeTeachingRoutes = require('./routes/typeTeachingRoutes');
+const gradesRoutes = require('./routes/gradesRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 
 const PORT = process.env.PORT;
@@ -57,8 +58,9 @@ const upload = multer({
 * CALL TO THE ROUTES
 */
 useRoutes(app, upload);
-schoolRoutes(app);
 typeTeachingRoutes(app);
+gradesRoutes(app);
+schoolRoutes(app);
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');
