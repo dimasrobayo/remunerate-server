@@ -31,7 +31,7 @@ CREATE TABLE `user_health_information` (
     `user_personal_info_id` int(11) NOT NULL,
     `blood_type` varchar(100) NOT NULL,
     `allergy` varchar(100) NOT NULL,
-    `observation` varchar(255) NOT NULL,
+    `observation` varchar(255) NULL,
     `created_ad` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id),
@@ -47,6 +47,23 @@ CREATE TABLE `user_social_information` (
     `user_personal_info_id` int(11) NOT NULL,
     `email` varchar(100) NOT NULL,
     `phone` varchar(45) NOT NULL,
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(id),
+    FOREIGN KEY(user_personal_info_id) REFERENCES user_personal_info(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `user_civilian_information`
+--
+CREATE TABLE `user_civilian_information` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `user_personal_info_id` int(11) NOT NULL,
+    `birthdate` varchar(100) NOT NULL,
+    `country_birth` varchar(45) NOT NULL,
+    `nationality` varchar(45) NOT NULL,
+    `observaciones` varchar(255) NULL,
     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY(id),
@@ -163,6 +180,8 @@ CREATE TABLE `users` (
     `email` varchar(100) NOT NULL,
     `password` varchar(90) NOT NULL,
     `email_verified_at` timestamp NULL,
+    `my_color` varchar(10) NULL DEFAULT '#4daf4d',
+    `grayscale` BOOLEAN NOT NULL DEFAULT FALSE,
     `created_at` timestamp NULL DEFAULT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` timestamp NULL DEFAULT NULL DEFAULT CURRENT_TIMESTAMP,
     `deleted_at` timestamp NULL,
@@ -190,4 +209,20 @@ CREATE TABLE user_has_roles(
 
 INSERT INTO `user_has_roles` (`users_id`, `roles_id`, `created_at`, `updated_at`) VALUES
 (1, 1, '2023-07-27 12:41:22', '2023-07-27 12:41:22');
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `types_teaching`
+--
+CREATE TABLE `types_teaching` (
+  `id` int(11) NOT NULL,
+  `codigo` VARCHAR(20 NOT NULL),
+  `name` int(11) DEFAULT NULL,
+  `status` enum('ACTIVO','INACTIVO') DEFAULT 'ACTIVO',
+  `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+  `updated_at` TIMESTAMP NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ALTER TABLE `types_teaching` ADD PRIMARY KEY (`id`);
+ALTER TABLE `types_teaching` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 -- --------------------------------------------------------

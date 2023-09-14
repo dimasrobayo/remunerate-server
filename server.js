@@ -22,6 +22,7 @@ app.use(schoolMiddleware);
 * IMPORT TO THE ROUTES
 */
 const useRoutes = require('./routes/useRoutes');
+const typeTeachingRoutes = require('./routes/typeTeachingRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 
 const PORT = process.env.PORT;
@@ -33,13 +34,14 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-const corsOptions = {
-    origin: 'https://192.168.1.105:3000',
-    // origin: 'https://192.168.60.136:3000',
-    credentials: true,
-};
+// Desactivar CORS
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*'); // Permitir acceso desde cualquier origen
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(passport.initialize());
 app.use(passport.session());
 require('./config/passport')(passport);
@@ -56,6 +58,11 @@ const upload = multer({
 */
 useRoutes(app, upload);
 schoolRoutes(app);
+typeTeachingRoutes(app);
+
+app.get('/', (request, response) => {
+    response.send('Ruta raiz del backend');
+});
 
 // Init Server
 server.listen(PORT, HOST || 'localhost', function(){

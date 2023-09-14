@@ -97,17 +97,25 @@ module.exports = {
                 const token = jwt.sign({id: myUser.id, email: myUser.email}, keys.secretOrKey, {});
 
                 const data = {
-                    id: myUser.id,
-                    name: myUser.name,
-                    lastname: myUser.lastname,
-                    email: myUser.email,
-                    phone: myUser.phone,
-                    image: myUser.image,
-                    myColor: myUser.my_color,
-                    session_token: `JWT ${token}`,
-                    roles: JSON.parse(myUser.roles)
+                    id:                     myUser.id,
+                    name:                   myUser.name,
+                    lastname:               myUser.lastname,
+                    mother_lastname:        myUser.mother_lastname,
+                    type_document:          myUser.type_document,
+                    document_number:        myUser.document_number,
+                    gender:                 myUser.gender,
+                    email:                  myUser.email,
+                    phone:                  myUser.phone,
+                    image:                  myUser.image,
+                    myColor:                myUser.my_color,
+                    session_token:          `JWT ${token}`,
+                    roles:                  JSON.parse(myUser.roles),
+                    civilian_information:   myUser.civilian_information,
+                    social_information:     myUser.social_information,
+                    health_information:     myUser.health_information,
+                    address_information:    myUser.address_information,
                 }
-                
+
                 return response.status(201).json({
                     success: true,
                     message: 'El usuario fue autenticado',
@@ -137,6 +145,25 @@ module.exports = {
                 data: data // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
             })
         })
+    },
+
+    findUsersById(request, response) {
+        const id = request.params.id;
+
+        User.findUsersById(id, (error, data) => {
+            if(error){
+                return response.status(501).json({
+                    success: false,
+                    message: 'Error al obtener el usuario',
+                    error: error
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Listado de usuarios',
+                data: data // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
+            })
+        });
     },
 
     async updateWithImage(req, res) {
@@ -189,12 +216,9 @@ module.exports = {
     },
 
     async updateWithoutImage(req, res) {
-
         const user = req.body; // CAPTURO LOS DATOS QUE ME ENVIE EL CLIENTE
 
-        User.updateWithoutImage(user, (err, data) => {
-
-        
+        User.updateWithOutImage(user, (err, user) => {
             if (err) {
                 return res.status(501).json({
                     success: false,
@@ -208,8 +232,6 @@ module.exports = {
                 message: 'Usuario actualizado correctamente',
                 data: user
             });
-        
-
         });
 
     }
