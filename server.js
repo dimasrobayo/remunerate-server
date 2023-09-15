@@ -24,6 +24,7 @@ app.use(schoolMiddleware);
 const useRoutes = require('./routes/useRoutes');
 const typeTeachingRoutes = require('./routes/typeTeachingRoutes');
 const gradesRoutes = require('./routes/gradesRoutes');
+const coursesRoutes = require('./routes/coursesRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 
 const PORT = process.env.PORT;
@@ -60,6 +61,7 @@ const upload = multer({
 useRoutes(app, upload);
 typeTeachingRoutes(app);
 gradesRoutes(app);
+coursesRoutes(app);
 schoolRoutes(app);
 
 app.get('/', (request, response) => {

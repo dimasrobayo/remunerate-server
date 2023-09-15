@@ -5,7 +5,7 @@ grades.getGrades = async (result) => {
     const connection = await dbSchool.getConnection();
     
     try {
-        const [listTypeTeaching] = await connection.execute(`
+        const [listGrades] = await connection.execute(`
             SELECT 
                 tt.id AS id_type_teaching,
                 tt.codigo AS code_type_teaching,
@@ -17,7 +17,7 @@ grades.getGrades = async (result) => {
             ORDER BY g.id
         `);
 
-        result(null, listTypeTeaching)
+        result(null, listGrades)
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
@@ -61,7 +61,6 @@ grades.update = async (grade, result) => {
             WHERE
                 id = ${grade.id}
         `)
-        console.log(JSON.stringify(updateGrade))
         result(null, updateGrade.insertId);
     } catch (error) {
         console.error('Error fetching users from tenant database', error);

@@ -243,3 +243,20 @@ CREATE TABLE `sys_grades` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `sys_courses`
+--
+CREATE TABLE `sys_courses` (
+  	`id` int(11) NOT NULL AUTO_INCREMENT,
+  	`name` varchar(50) DEFAULT NULL,
+  	`code_course` varchar(20) DEFAULT NULL,
+  	`sys_grade_id` int(11) DEFAULT NULL,
+  	`created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`deleted_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+	FOREIGN KEY(sys_grade_id) REFERENCES sys_grades(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
