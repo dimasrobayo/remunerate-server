@@ -25,6 +25,8 @@ const useRoutes = require('./routes/useRoutes');
 const typeTeachingRoutes = require('./routes/typeTeachingRoutes');
 const gradesRoutes = require('./routes/gradesRoutes');
 const coursesRoutes = require('./routes/coursesRoutes');
+const typeSubjectsRoutes = require('./routes/typeSubjects');
+const subjectRoutes = require('./routes/subjectsRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 
 const PORT = process.env.PORT;
@@ -62,6 +64,8 @@ useRoutes(app, upload);
 typeTeachingRoutes(app);
 gradesRoutes(app);
 coursesRoutes(app);
+subjectRoutes(app);
+typeSubjectsRoutes(app);
 schoolRoutes(app);
 
 app.get('/', (request, response) => {

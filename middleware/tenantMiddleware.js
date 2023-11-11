@@ -16,7 +16,7 @@ async function tenantMiddleware(request, response, next) {
         const [rows] = await pool.execute(`SELECT * FROM tenants WHERE domain = '${domain}'`);
 
         if (rows.length === 0) {
-        return response.status(404).json({ error: 'Tenant not found' });
+            return response.status(404).json({ error: 'Tenant not found' });
         }
 
         const dbSchool_name = rows[0]['database_name'];
