@@ -28,8 +28,8 @@ typesTeaching.create = async (type, result) => {
                 codigo,
                 name
             )VALUES(
-                '${type.codigo}',
-                '${type.name}'
+                '${type.codigo.trim()}',
+                '${type.name.trim().toUpperCase()}'
             )
         `)
 
