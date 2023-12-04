@@ -5,6 +5,7 @@ async function identifyTenant(req, res, next) {
 
   try {
     const tenant = await tenantModel.findTenantByDomain(domain);
+    console.log("domain");
 
     if (!tenant) {
       return res.status(404).json({ error: 'Tenant not found' });

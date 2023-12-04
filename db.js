@@ -1,17 +1,21 @@
 require('dotenv').config();
-const mysql = require('mysql2/promise');
+
+const knex = require('knex');
 
 class Database {
   constructor() {
     this.connection = null;
   }
 
-  async connect(dbSchool_name) {
-    this.connection = await mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: dbSchool_name,
+  async connect(dbSchoolName) {
+    this.connection = knex({
+      client: 'mysql',
+      connection: {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: dbSchoolName,
+      },
     });
   }
 
@@ -20,6 +24,13 @@ class Database {
       throw new Error('Database connection not initialized.');
     }
     return this.connection;
+  }
+
+  async closeConnection() {
+    if (this.connection) {
+      await this.connection.destroy();
+      this.connection = null;
+    }
   }
 }
 

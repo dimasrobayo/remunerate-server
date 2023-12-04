@@ -8,7 +8,7 @@ User.findById = async (id, result) => {
     try {
         connection = await dbSchool.getConnection();
         
-        const [user] = await connection.execute(`
+        const [user] = await connection.raw(`
         SELECT 
             u.id,
             upi.name,
@@ -35,7 +35,7 @@ User.findById = async (id, result) => {
         
         result(null, user[0])
     } catch (error) {
-        console.error('Error fetching users from tenant database', err);
+        console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
 }
@@ -46,7 +46,7 @@ User.findByEmail = async(email, result) => {
     try {
         connection = await dbSchool.getConnection();
         
-        const [user] = await connection.query(`
+        const [user] = await connection.raw(`
         SELECT 
             u.id,
             upi.id as id_user_personal_info,
@@ -79,9 +79,9 @@ User.findByEmail = async(email, result) => {
         WHERE u.email = '${email}' and u.status_user_id = 1
         GROUP BY u.id
         `);
-
+        
         if(user[0]){
-            const [civilian_information] = await connection.query(`
+            const [civilian_information] = await connection.raw(`
                 SELECT 
                     uci.*, 
                     DATE_FORMAT(uci.birthdate, '%Y-%m-%d') AS birthdate
@@ -89,21 +89,21 @@ User.findByEmail = async(email, result) => {
                 WHERE uci.user_personal_info_id = ${user[0].id_user_personal_info}
             `);
 
-            const [social_information] = await connection.query(`
+            const [social_information] = await connection.raw(`
                 SELECT 
                     usi.*
                 FROM user_social_information AS usi
                 WHERE usi.user_personal_info_id = ${user[0].id_user_personal_info}
             `);
 
-            const [health_information] = await connection.query(`
+            const [health_information] = await connection.raw(`
                 SELECT 
                     uhi.*
                 FROM user_health_information AS uhi
                 WHERE uhi.user_personal_info_id = ${user[0].id_user_personal_info}
             `);
 
-            const [address_information] = await connection.query(`
+            const [address_information] = await connection.raw(`
                 SELECT 
                     ua.*
                 FROM user_addresses AS ua
@@ -122,6 +122,11 @@ User.findByEmail = async(email, result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de realiza')
+        await dbSchool.closeConnection();
+    }
 }
 
 User.register = async (user, result) => {
@@ -131,7 +136,7 @@ User.register = async (user, result) => {
     try {
         connection = await dbSchool.getConnection();
         
-        const [user_personal_info] = await connection.execute(`
+        const [user_personal_info] = await connection.raw(`
             INSERT INTO
                 user_personal_info(
                     name,
@@ -153,7 +158,7 @@ User.register = async (user, result) => {
             )
         `);
 
-        const [user_social_information] = await connection.execute(`
+        const [user_social_information] = await connection.raw(`
                 INSERT INTO
                 user_social_information(
                     user_personal_info_id,
@@ -166,7 +171,7 @@ User.register = async (user, result) => {
                 )
         `)
 
-        const [users] = await connection.execute(`
+        const [users] = await connection.raw(`
             INSERT INTO
             users(
                 status_user_id,
@@ -181,7 +186,7 @@ User.register = async (user, result) => {
             )
         `);
 
-        const [user_has_roles] = await connection.execute(`
+        const [user_has_roles] = await connection.raw(`
             INSERT INTO
                 user_has_roles(
                     users_id,
@@ -198,6 +203,11 @@ User.register = async (user, result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de realizar el register')
+        await dbSchool.closeConnection();
+    }
 }
 
 User.registerWithImage = async (user, result) => {
@@ -208,7 +218,7 @@ User.registerWithImage = async (user, result) => {
     try {
         connection = await dbSchool.getConnection();
         
-        const [validateInfo] = await connection.execute(`
+        const [validateInfo] = await connection.raw(`
             SELECT 
                 upi.document_number
             FROM 
@@ -218,7 +228,7 @@ User.registerWithImage = async (user, result) => {
         `);
 
         if(validateInfo.length === 0) {
-            const [user_personal_info] = await connection.execute(`
+            const [user_personal_info] = await connection.raw(`
                 INSERT INTO
                     user_personal_info(
                         name,
@@ -240,7 +250,7 @@ User.registerWithImage = async (user, result) => {
                 )
             `);
 
-            const [user_addresses] = await connection.execute(`
+            const [user_addresses] = await connection.raw(`
                 INSERT INTO
                     user_addresses(
                         address,
@@ -256,7 +266,7 @@ User.registerWithImage = async (user, result) => {
                 )
             `);
 
-            const [user_addresses_personal_info] = await connection.execute(`
+            const [user_addresses_personal_info] = await connection.raw(`
                 INSERT INTO
                     user_addresses_personal_info(
                         address_id,
@@ -268,7 +278,7 @@ User.registerWithImage = async (user, result) => {
                 )
             `);
 
-            const [user_health_information] = await connection.execute(`
+            const [user_health_information] = await connection.raw(`
                 INSERT INTO
                     user_health_information(
                         user_personal_info_id,
@@ -284,7 +294,7 @@ User.registerWithImage = async (user, result) => {
                 )
             `);
 
-            const [user_social_information] = await connection.execute(`
+            const [user_social_information] = await connection.raw(`
                 INSERT INTO
                     user_social_information(
                         user_personal_info_id,
@@ -298,7 +308,7 @@ User.registerWithImage = async (user, result) => {
                 )
             `);
 
-            const [users] = await connection.execute(`
+            const [users] = await connection.raw(`
                 INSERT INTO
                     users(
                         status_user_id,
@@ -314,7 +324,7 @@ User.registerWithImage = async (user, result) => {
                 )
             `);
 
-            const [user_has_roles] = await connection.execute(`
+            const [user_has_roles] = await connection.raw(`
                 INSERT INTO
                     user_has_roles(
                         users_id,
@@ -335,13 +345,18 @@ User.registerWithImage = async (user, result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de realizar el register with image')
+        await dbSchool.closeConnection();
+    }
 }
 
 User.findByUsers = async (result) => {
     const connection = await dbSchool.getConnection();
 
     try {
-        const [user] = await connection.execute(`
+        const [user] = await connection.raw(`
         SELECT 
             u.id,
             upi.name,
@@ -361,6 +376,11 @@ User.findByUsers = async (result) => {
         console.error('Error fetching users from tenant database', err);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de findByUsers')
+        await dbSchool.closeConnection();
+    }
 }
 
 User.findUsersById = async (id, result) => {
@@ -369,7 +389,7 @@ User.findUsersById = async (id, result) => {
     try {
         connection = await dbSchool.getConnection();
         
-        const [user] = await connection.execute(`
+        const [user] = await connection.raw(`
         SELECT 
             u.id,
             upi.id as id_user_personal_info,
@@ -402,28 +422,28 @@ User.findUsersById = async (id, result) => {
         `);
 
         if(user[0]){
-            const [civilian_information] = await connection.query(`
+            const [civilian_information] = await connection.raw(`
                 SELECT 
                     uci.*
                 FROM user_civilian_information AS uci
                 WHERE uci.user_personal_info_id = ${user[0].id_user_personal_info}
             `);
 
-            const [social_information] = await connection.query(`
+            const [social_information] = await connection.raw(`
                 SELECT 
                     usi.*
                 FROM user_social_information AS usi
                 WHERE usi.user_personal_info_id = ${user[0].id_user_personal_info}
             `);
 
-            const [health_information] = await connection.query(`
+            const [health_information] = await connection.raw(`
                 SELECT 
                     uhi.*
                 FROM user_health_information AS uhi
                 WHERE uhi.user_personal_info_id = ${user[0].id_user_personal_info}
             `);
 
-            const [address_information] = await connection.query(`
+            const [address_information] = await connection.raw(`
                 SELECT 
                     ua.*
                 FROM user_addresses AS ua
@@ -442,6 +462,11 @@ User.findUsersById = async (id, result) => {
         console.error('Error fetching users from tenant database', err);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de findUsersById')
+        await dbSchool.closeConnection();
+    }
 }
 
 User.updateWithOutImage = async (user, result) => {
@@ -451,9 +476,10 @@ User.updateWithOutImage = async (user, result) => {
     try {
         connection = await dbSchool.getConnection();
         
-        await connection.beginTransaction();
+        //await connection.beginTransaction();
+        await connection.transaction(async trx => {
             // UPDATE PERSONAL INFO SESSION
-            const [user_personal_info] = await connection.execute(`
+            const [user_personal_info] = await connection.raw(`
                 UPDATE user_personal_info
                 SET
                     name = '${user.name}',
@@ -469,7 +495,7 @@ User.updateWithOutImage = async (user, result) => {
             `);
 
             // UPDATE CIVILIAN INFO SESSION
-            const [getUserCivilianInformation] = await connection.execute(`
+            const [getUserCivilianInformation] = await connection.raw(`
                 SELECT 
                     * 
                 FROM 
@@ -479,7 +505,7 @@ User.updateWithOutImage = async (user, result) => {
             `);
             
             if(getUserCivilianInformation.length > 0){
-                const [user_civilian_information] = await connection.execute(`
+                const [user_civilian_information] = await connection.raw(`
                     UPDATE user_civilian_information
                     SET
                         user_personal_info_id = ${user.id},
@@ -491,7 +517,7 @@ User.updateWithOutImage = async (user, result) => {
                     user_personal_info_id = ${user.id}
                 `);
             }else{
-                const [user_civilian_information] = await connection.execute(`
+                const [user_civilian_information] = await connection.raw(`
                     INSERT INTO
                     user_civilian_information(
                         user_personal_info_id,
@@ -510,7 +536,7 @@ User.updateWithOutImage = async (user, result) => {
             }
 
             // UPDATE HEALTH INFORMATION SESSION
-            const [getUserHealthInformation] = await connection.execute(`
+            const [getUserHealthInformation] = await connection.raw(`
                 SELECT 
                     * 
                 FROM 
@@ -520,7 +546,7 @@ User.updateWithOutImage = async (user, result) => {
             `);
 
             if(getUserHealthInformation.length > 0){
-                const [user_health_information] = await connection.execute(`
+                const [user_health_information] = await connection.raw(`
                     UPDATE user_health_information
                     SET
                         blood_type = '${health_information.blood_type}',
@@ -531,7 +557,7 @@ User.updateWithOutImage = async (user, result) => {
                         user_personal_info_id = ${user.id}
                 `)
             }else{
-                const [user_health_information] = await connection.execute(`
+                const [user_health_information] = await connection.raw(`
                     INSERT INTO
                     user_health_information(
                         user_personal_info_id,
@@ -550,7 +576,7 @@ User.updateWithOutImage = async (user, result) => {
             }
 
             // UPDATE SOCIAL INFO SESSION
-            const [getUserSocialInformation] = await connection.execute(`
+            const [getUserSocialInformation] = await connection.raw(`
                 SELECT 
                     * 
                 FROM 
@@ -560,7 +586,7 @@ User.updateWithOutImage = async (user, result) => {
             `);
 
             if(getUserSocialInformation.length > 0){
-                const [user_social_information] = await connection.execute(`
+                const [user_social_information] = await connection.raw(`
                     UPDATE user_social_information
                     SET
                         email = '${social_information.email}',
@@ -570,7 +596,7 @@ User.updateWithOutImage = async (user, result) => {
                         user_personal_info_id = ${user.id}
                 `);
             }else{
-                const [user_social_information] = await connection.execute(`
+                const [user_social_information] = await connection.raw(`
                     INSERT INTO
                     user_social_information(
                         user_personal_info_id,
@@ -587,7 +613,7 @@ User.updateWithOutImage = async (user, result) => {
             }
 
             // UPDATE USER INFO SESSION
-            const [users] = await connection.execute(`
+            const [users] = await connection.raw(`
                 UPDATE users
                 SET
                     email  = '${social_information.email}',
@@ -596,11 +622,17 @@ User.updateWithOutImage = async (user, result) => {
                 WHERE
                     id = ${user.id}
             `);
-        await connection.commit();
+        //await connection.commit();
+        });
         result(null, user);
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de updateWithOutImage')
+        await dbSchool.closeConnection();
     }
 }
 

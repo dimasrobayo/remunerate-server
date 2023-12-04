@@ -5,7 +5,7 @@ grades.getGrades = async (result) => {
     const connection = await dbSchool.getConnection();
     
     try {
-        const [listGrades] = await connection.execute(`
+        const [listGrades] = await connection.raw(`
             SELECT 
                 tt.id AS id_type_teaching,
                 tt.codigo AS code_type_teaching,
@@ -22,13 +22,18 @@ grades.getGrades = async (result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de getGrades')
+        await dbSchool.closeConnection();
+    }
 }
 
 grades.create = async (grade, result) => {
     const connection = await dbSchool.getConnection();
 
     try {
-        const [createGrade] = await connection.execute(`
+        const [createGrade] = await connection.raw(`
             INSERT INTO sys_grades(
                 code_grade,
                 name,
@@ -45,13 +50,18 @@ grades.create = async (grade, result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de grades create')
+        await dbSchool.closeConnection();
+    }
 }
 
 grades.update = async (grade, result) => {
     const connection = await dbSchool.getConnection();
 
     try {
-        const [updateGrade] = await connection.execute(`
+        const [updateGrade] = await connection.raw(`
             UPDATE sys_grades
             SET
                 code_grade  = '${grade.code_grade}',
@@ -66,13 +76,18 @@ grades.update = async (grade, result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de update grades')
+        await dbSchool.closeConnection();
+    }
 }
 
 grades.delete = async (id, result) => {
     const connection = await dbSchool.getConnection();
 
     try {
-        const [deleteGrade] = await connection.execute(`
+        const [deleteGrade] = await connection.raw(`
             UPDATE sys_grades
             SET
                 deleted_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
@@ -83,6 +98,11 @@ grades.delete = async (id, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de delete grades')
+        await dbSchool.closeConnection();
     }
 }
 

@@ -8,6 +8,7 @@ const cors = require('cors');
 const passport = require('passport');
 const multer = require('multer');
 
+app.use(cors());
 /*
 * MIDDLEWARE IDENTIFY TENANT
 */
@@ -39,15 +40,18 @@ app.use(express.urlencoded({
 }));
 
 // Desactivar CORS
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*'); // Permitir acceso desde cualquier origen
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
-});
+// app.use((req, res, next) => {
+//     res.header('Access-Control-Allow-Origin', '*'); // Permitir acceso desde cualquier origen
+//     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//     next();
+// });
 
-app.use(cors());
+
+
+
 app.use(passport.initialize());
 app.use(passport.session());
+
 require('./config/passport')(passport);
 
 app.disable('x-powered-by');

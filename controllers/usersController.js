@@ -8,8 +8,7 @@ const keys = require('../config/keys');
 
 module.exports = {
     async register(request, response) {
-        const { user } = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
-
+        const user = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
         User.register(user, (error, data) => {
             if(error){
                 return response.status(501).json({

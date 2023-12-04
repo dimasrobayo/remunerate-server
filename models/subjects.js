@@ -5,7 +5,7 @@ subjects.getSubjects = async (result) => {
     const connection = await dbSchool.getConnection();
     
     try {
-        const [listSubjects] = await connection.execute(`
+        const [listSubjects] = await connection.raw(`
             SELECT
                 ss.id,
                 ss.code_mineduc,
@@ -35,6 +35,11 @@ subjects.getSubjects = async (result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de getSubjects')
+        await dbSchool.closeConnection();
+    }
 }
 
 subjects.create = async (subject, result) => {
@@ -44,7 +49,7 @@ subjects.create = async (subject, result) => {
         const { grade_ids, typesubjects_ids } = subject;
 
         typesubjects_ids.forEach(async (sys_type_subjects_id) => {
-            const [addSubjects] = await connection.execute(`
+            const [addSubjects] = await connection.raw(`
                 INSERT INTO sys_subjects(
                     sys_type_subjects_id,
                     name,
@@ -61,7 +66,7 @@ subjects.create = async (subject, result) => {
             `)
 
             grade_ids.forEach(async (sys_grade_id) => {
-                const [addGradesSubjects] = await connection.execute(`
+                const [addGradesSubjects] = await connection.raw(`
                     INSERT INTO sys_grades_subjects(
                         sys_grade_id,
                         sys_subjects_id
@@ -78,6 +83,11 @@ subjects.create = async (subject, result) => {
         console.error('Error fetching subject from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de Subjects create')
+        await dbSchool.closeConnection();
+    }
 }
 
 subjects.update = async (subject, result) => {
@@ -85,7 +95,7 @@ subjects.update = async (subject, result) => {
     const { id, grade_ids, name, code_mineduc, color, hour } = subject;
     
     try {
-        const [updateSubject] = await connection.execute(`
+        const [updateSubject] = await connection.raw(`
             UPDATE sys_subjects
             SET
                 name = '${name}',
@@ -102,9 +112,14 @@ subjects.update = async (subject, result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de Subjects update')
+        await dbSchool.closeConnection();
+    }
     
     /*
-    const [subjectById] = await connection.execute(`
+    const [subjectById] = await connection.raw(`
         SELECT
             sgs.id AS id_sys_grades_subjects
         FROM sys_subjects AS ss
@@ -125,7 +140,7 @@ subjects.update = async (subject, result) => {
     console.log('grade_ids: ' + grade_ids);
     
     const deleteSubjectsGrades = await Promise.all(selectDeleteSubjectsGradesToId.map(async (subject) => {
-        const [deleteSubject] = await connection.execute(`
+        const [deleteSubject] = await connection.raw(`
             UPDATE sys_grades_subjects
             SET
                 deleted_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
@@ -138,7 +153,7 @@ subjects.update = async (subject, result) => {
     console.log('subject: ' + JSON.stringify(subjectById, null, 3));
     
     try {
-        const [updateCourse] = await connection.execute(`
+        const [updateCourse] = await connection.raw(`
             UPDATE sys_courses
             SET
                 code_course  = '${course.code_course}',
@@ -160,7 +175,7 @@ subjects.delete = async (id, result) => {
     const connection = await dbSchool.getConnection();
 
     try {
-        const [deleteSubject] = await connection.execute(`
+        const [deleteSubject] = await connection.raw(`
             UPDATE sys_subjects
             SET
                 deleted_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
@@ -171,6 +186,11 @@ subjects.delete = async (id, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de Subjects delete')
+        await dbSchool.closeConnection();
     }
 }
 

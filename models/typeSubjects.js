@@ -5,7 +5,7 @@ typeSubjects.getTypeSubjects = async (result) => {
     const connection = await dbSchool.getConnection();
     
     try {
-        const [listTypeSubjects] = await connection.execute(`
+        const [listTypeSubjects] = await connection.raw(`
             SELECT
                 sts.*
             FROM sys_type_subjects AS sts
@@ -16,6 +16,11 @@ typeSubjects.getTypeSubjects = async (result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de getTypeSubjects')
+        await dbSchool.closeConnection();
     }
 }
 
