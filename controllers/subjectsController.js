@@ -19,7 +19,6 @@ module.exports = {
     },
     async create(request, response) {
         const subject = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
-        console.log(JSON.stringify(subject));
         
         subjects.create(subject, (error, data) => {
             if(error) {

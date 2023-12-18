@@ -29,6 +29,7 @@ const coursesRoutes = require('./routes/coursesRoutes');
 const typeSubjectsRoutes = require('./routes/typeSubjects');
 const subjectRoutes = require('./routes/subjectsRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
+const teachersRoutes = require('./routes/teacherRoutes');
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
@@ -45,9 +46,6 @@ app.use(express.urlencoded({
 //     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 //     next();
 // });
-
-
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -71,6 +69,7 @@ coursesRoutes(app);
 subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
+teachersRoutes(app);
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');

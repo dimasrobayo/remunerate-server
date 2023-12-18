@@ -306,3 +306,46 @@ CREATE TABLE `sys_grades_subjects` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+-- Estructura de tabla para la tabla `sys_teachers`
+--
+CREATE TABLE `sys_teachers` (
+  	`id` int(11) NOT NULL AUTO_INCREMENT,
+  	`user_personal_info_id` int(11) DEFAULT NULL,
+  	`created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`deleted_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+	FOREIGN KEY(user_personal_info_id) REFERENCES user_personal_info(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- Estructura de tabla para la tabla `sys_courses_teachers`
+--
+CREATE TABLE `sys_courses_teachers` (
+  	`id` int(11) NOT NULL AUTO_INCREMENT,
+    `sys_teachers_id` int(11) DEFAULT NULL, 
+  	`sys_courses_id` int(11) DEFAULT NULL,
+  	`created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`deleted_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+	FOREIGN KEY(sys_teachers_id) REFERENCES sys_teachers(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(sys_courses_id) REFERENCES sys_courses(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- Estructura de tabla para la tabla `sys_subjects_teachers`
+--
+CREATE TABLE `sys_subjects_teachers` (
+  	`id` int(11) NOT NULL AUTO_INCREMENT,
+    `sys_teachers_id` int(11) DEFAULT NULL, 
+  	`sys_grades_subjects_id` int(11) DEFAULT NULL,
+  	`created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  	`deleted_at` timestamp NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+	FOREIGN KEY(sys_teachers_id) REFERENCES sys_teachers(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(sys_grades_subjects_id) REFERENCES sys_grades_subjects(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------

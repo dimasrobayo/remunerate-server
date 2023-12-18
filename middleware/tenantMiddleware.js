@@ -6,7 +6,7 @@ const pool = mysql.createPool({
     user: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
-    connectionLimit: 10
+    connectionLimit: 20
 });
 
 async function tenantMiddleware(request, response, next) {
