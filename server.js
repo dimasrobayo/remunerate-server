@@ -69,7 +69,7 @@ coursesRoutes(app);
 subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
-teachersRoutes(app);
+teachersRoutes(app,upload);
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');
