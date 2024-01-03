@@ -30,6 +30,7 @@ const typeSubjectsRoutes = require('./routes/typeSubjects');
 const subjectRoutes = require('./routes/subjectsRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 const teachersRoutes = require('./routes/teacherRoutes');
+const utilsRoutes = require('./routes/utilsRoutes');
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
@@ -70,6 +71,7 @@ subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
 teachersRoutes(app);
+utilsRoutes(app);
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');
