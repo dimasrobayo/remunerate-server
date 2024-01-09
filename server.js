@@ -8,7 +8,7 @@ const cors = require('cors');
 const passport = require('passport');
 const multer = require('multer');
 
-app.use(cors());
+
 /*
 * MIDDLEWARE IDENTIFY TENANT
 */
@@ -70,6 +70,8 @@ subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
 teachersRoutes(app,upload);
+
+
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');

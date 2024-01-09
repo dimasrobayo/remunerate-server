@@ -6,63 +6,62 @@ const { parse } = require("csv-parse")
 const validate = require('validate.js');
 const _ = require('lodash');
 
-
+const dbSchool = require('../db');
 const sysFile = require('../models/sysFile');
+const userPersonalInfo = require('../models/userPersonalInfo');
+const userCivilianInfo = require('../models/userCivilianInfo');
+const sysTeachers = require('../models/sysTeachers');
 
-const nameFieldsForMigrateTeacher = {
+
+const canonicalNamesFields = {
   'Numero Documento' : 'document_number',
-  'Digito Verificador' : '',
+  'Digito Verificador' : 'document_number_dv',
   'Nombre' : 'name',
   'Apellido Paterno' : 'lastname',
   'Apellido Materno' : 'mother_lastname',
   'Genero' : 'gender',
-  'Fecha de Nacimiento' : '',
-  'RBD' : ''
-};
-
-const canonicalNamesFields = {
-  'Numero Documento' : 'DOC_RUN',
-  'Digito Verificador' : 'DOC_DV',
-  'Nombre' : 'DOC_NOMBRE',
-  'Apellido Paterno' : 'DOC_PATERNO',
-  'Apellido Materno' : 'DOC_MATERNO',
-  'Genero' : 'DOC_GENERO',
-  'Fecha de Nacimiento' : 'DOC_FEC_NAC',
-  'RBD' : 'DOC_RBD'
+  'Fecha de Nacimiento' : 'birthdate',
+  'RBD' : 'RBD'
 };
 
 
 
 const constraints = {
-  DOC_RUN: { // Numero Documento
+  document_number: { // Numero Documento
     presence: {
-      allowEmpty: true,
+      allowEmpty: false,
       message: 'The Numero Documento field is required.'
     }
   },
-  DOC_DV: { // Digito Verificador
+  document_number_dv: { // Digito Verificador
     presence: {
-      allowEmpty: true,
+      allowEmpty: false,
       message: 'The DV field is required.'
     }
   },
-  DOC_NOMBRE: {
-    presence: {allowEmpty: false, message: 'The name field is required.' }
+  name: {
+    presence: { allowEmpty: false,
+       message: 'The name field is required.' }
   },
-  DOC_PATERNO: {
-    presence: { message: 'The lastname field is required.' }
+  lastname: {
+    presence: { allowEmpty: false,
+       message: 'The lastname field is required.' }
   },
-  DOC_MATERNO: {
-    presence: { message: 'The mother lastname field is required.' }
+  mother_lastname: {
+    presence: { allowEmpty: false,
+       message: 'The mother lastname field is required.' }
   },
-  DOC_GENERO: {
-    presence: { message: 'The gender field is required.' }
+  gender: {
+    presence: { allowEmpty: false,
+       message: 'The gender field is required.' }
   },
-  DOC_FEC_NAC: {
-    presence: { message: 'The DOC_FEC_NAC field is required.' }
+  birthdate: {
+    presence: { allowEmpty: false,
+       message: 'The DOC_FEC_NAC field is required.' }
   },
-  DOC_RBD: {
-    presence: { message: 'The RBD field is required.' }
+  RBD: {
+    presence: { allowEmpty: false,
+       message: 'The RBD field is required.' }
   },
   
   // Agrega más restricciones según tus necesidades
@@ -107,7 +106,7 @@ module.exports = {
             let sysFileRecordID = await sysFile.create(fileData);
             if (sysFileRecordID != null) {
               csv_data['file_id'] = sysFileRecordID;
-              csv_data['columns'] = Object.keys(nameFieldsForMigrateTeacher)
+              csv_data['columns'] = Object.keys(canonicalNamesFields)
             }
             // obtenemos los 3 registros
             const fileContent = await fs.promises.readFile(`${folderPathAsync}/${filename}`, 'utf8');
@@ -139,13 +138,14 @@ module.exports = {
     },
     async migrate(request, response) {
       const id = request.params.id;
+      const connection = await dbSchool.getConnection();
       
       try {
         // get record sysfile
         let sysFileRecord = await sysFile.getSysFilesById(id);
         const keyMapping = request.body;
         
-        if(Object.keys(keyMapping).length > Object.keys(nameFieldsForMigrateTeacher).length){
+        if(Object.keys(keyMapping).length > Object.keys(canonicalNamesFields).length){
           return response.status(401).json({
             success: false,
             message: 'supera el numeros de campos',
@@ -173,31 +173,47 @@ module.exports = {
           });
           return obj;
         });
-        // create compute value for full rut
-        const newData = _.map(results, (obj) => ({
+        // create compute value 
+        const modelData = _.map(results, (obj) => ({
           ...obj,
-          DOC_FULL_RUN: `${obj.DOC_RUN}-${obj.DOC_DV}`
+          document_number: `${obj.document_number}-${obj.document_number_dv}`,
+          type_document: 'run',
+          phone: '',
+          country_birth: '',
+          nationality: '',
+          observaciones: '',
+
         }));
-        
-        console.log(newData);
-        
-        
-        
-        //const resultados = validarArrayDeObjetos(results);
-        //console.log(resultados);
 
-
+        const teachers = validateTeachers(modelData);
+        await connection.transaction(async (transaction) => {
+          for (const teacher of teachers.dataValidate) {
+            const user = await userPersonalInfo.getByDocumentNumber(teacher.document_number, transaction);
+            if (typeof user === 'undefined') {
+              const userPersonalInfoId = await userPersonalInfo.create(teacher, transaction);
+              await userCivilianInfo.create(teacher, userPersonalInfoId, transaction);
+              await sysTeachers.create(userPersonalInfoId, transaction);
+            }
+          }
+          // Sucess queries
+          await transaction.commit();
+        });
 
         return response.status(201).json({
           success: true,
           message: 'success',
+          errors: teachers.errors
         })
       } catch (error) {
-        console.log(error);
+        
         return response.status(201).json({
           success: false,
           message: error,
         })
+      }finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('closed conection....')
+        await dbSchool.closeConnection();
       }
 
       
@@ -253,26 +269,29 @@ function createFolderIfNotExists(folderPath) {
     });
 }
 
-function validarArrayDeObjetos(dataArray) {
-  const resultados = [];
+function validateTeachers(modelData) {
+  const errors = [];
+  const dataValidate = [];
 
-  for (let i = 0; i < dataArray.length; i++) {
-    const validationResult = validate(dataArray[i], constraints);
-    console.log(dataArray[i]);
+  for (let i = 1; i < modelData.length; i++) {
+    const validationResult = validate(modelData[i], constraints);
     if (validationResult !== undefined) {
-      const errores = validationResult[Object.keys(validationResult)[0]];
-      resultados.push({
-        indexRowError: i + 1,
+      const errores = validationResult;
+      errors.push({
+        indexRowError: i + 2,
         errors: errores
       });
+    }else{
+      dataValidate.push(modelData[i]);
     }
+    
   }
 
-  return resultados;
+  return {errors,dataValidate};
 }
 
 
-async function readFileCSV(path,withHeader = false) {
+async function readFileCSV(path,withHeader = true) {
   try {
     const results = [];
     const from_line = withHeader ? 2 : 1;
