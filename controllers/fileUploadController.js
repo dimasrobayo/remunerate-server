@@ -130,6 +130,7 @@ module.exports = {
             })
             
         } catch (error) {
+          console.log("error: ", error);
             return response.status(201).json({
               success: false,
               message: error,
@@ -158,7 +159,7 @@ module.exports = {
         // Obtén el directorio superior (un nivel arriba)
         const parentDirectory = path.join(__dirname, '../../');
         // fullpath store file
-        const folderPathAsync = path.join(parentDirectory, `uploads/${tenant}/tmp/`, `${user.id}`);
+        const folderPathAsync = path.join(parentDirectory, `uploads/${tenant}/tmp/`, `${1}`);
         //compose path
         const documentPath = path.join(folderPathAsync,`/${sysFileRecord.name}`);
         console.log(documentPath);
@@ -254,6 +255,22 @@ module.exports = {
           })
         }
 
+    },
+    async hello(request,response){
+      
+      try {
+        console.log('hello.............')
+        return response.status(201).json({
+          success: true,
+          message: 'id',
+        })
+      } catch (error) {
+        console.log(error);
+        return response.status(400).json({
+          success: false,
+          message: error,
+        })
+      }
     }
 }
 

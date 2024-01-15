@@ -18,6 +18,11 @@ app.use(tenantMiddleware);
 // MIDDLEWARE CONECTION TO DATA BASA SCHOOL
 const schoolMiddleware = require('./middleware/schoolMiddleware');
 app.use(schoolMiddleware);
+// Use cors middleware with the desired options
+app.use(cors({
+    origin: 'https://localhost:3000', // Replace with your actual frontend URL
+    credentials: true,
+  }));
 
 /*
 * IMPORT TO THE ROUTES
@@ -33,6 +38,7 @@ const teachersRoutes = require('./routes/teacherRoutes');
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
+
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -62,14 +68,15 @@ const upload = multer({
 /*
 * CALL TO THE ROUTES
 */
+teachersRoutes(app,upload);
 useRoutes(app, upload);
+
 typeTeachingRoutes(app);
 gradesRoutes(app);
 coursesRoutes(app);
 subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
-teachersRoutes(app,upload);
 
 
 

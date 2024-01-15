@@ -35,4 +35,20 @@ module.exports = {
             })
         })
     },
+    async hello(request,response){
+      
+        try {
+          
+          return response.status(400).json({
+            success: true,
+            message: 'id',
+          })
+        } catch (error) {
+          console.log(error);
+          return response.status(201).json({
+            success: false,
+            message: error,
+          })
+        }
+      }
 }
