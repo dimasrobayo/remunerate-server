@@ -93,7 +93,7 @@ module.exports = {
             const parentDirectory = path.join(__dirname, '../../');
             // fullpath store file
             const folderPathAsync = path.join(parentDirectory, `uploads/${tenant}/tmp/`, `${user.id}`);
-            createFolderIfNotExists(folderPathAsync)
+            await createFolderIfNotExists(folderPathAsync)
             // Guardar el archivo en el sistema de archivos
             fs.writeFileSync(`${folderPathAsync}/${filename}`, request.file.buffer);
             // save sys file
@@ -185,8 +185,9 @@ module.exports = {
           observaciones: '',
 
         }));
-
+        //console.log(modelData);
         const teachers = validateTeachers(modelData);
+        //console.log(teachers);
         await connection.transaction(async (transaction) => {
           for (const teacher of teachers.dataValidate) {
             const user = await userPersonalInfo.getByDocumentNumber(teacher.document_number, transaction);
@@ -275,15 +276,17 @@ module.exports = {
 }
 
 function createFolderIfNotExists(folderPath) {
+  return new Promise((resolve, reject) => {
     fs.mkdir(folderPath, { recursive: true }, (err) => {
       if (err) {
         console.error(`Error al crear la carpeta: ${err.message}`);
-        return false;
+        reject(false);
       } else {
         console.log(`Carpeta creada en: ${folderPath}`);
-        return true;
+        resolve(true);
       }
     });
+  });
 }
 
 function validateTeachers(modelData) {
