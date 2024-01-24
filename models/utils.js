@@ -17,11 +17,6 @@ utils.getRegions = async (result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
-    finally {
-        // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de getRegions')
-        await dbSchool.closeConnection();
-    }
 }
 
 utils.communityByRegions = async (id, result) => {
@@ -46,11 +41,6 @@ utils.communityByRegions = async (id, result) => {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
-    finally {
-        // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de getRegions')
-        await dbSchool.closeConnection();
-    }
 }
 
 utils.getCountries = async (result) => {
@@ -68,11 +58,6 @@ utils.getCountries = async (result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
-    }
-    finally {
-        // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de getRegions')
-        await dbSchool.closeConnection();
     }
 }
 

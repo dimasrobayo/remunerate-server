@@ -44,14 +44,14 @@ subjects.getSubjects = async (result) => {
 
 subjects.create = async (subject, result) => {
     const connection = await dbSchool.getConnection();
-
+    
     try {
         const { grade_ids, typesubjects_ids } = subject;
         
         typesubjects_ids.forEach(async (sys_type_subjects_id) => {
             const [addSubjects] = await connection.raw(`
-                INSERT INTO sys_subjects(
-                    sys_type_subjects_id,
+            INSERT INTO sys_subjects(
+                sys_type_subjects_id,
                     name,
                     code_mineduc,
                     color,
@@ -64,7 +64,8 @@ subjects.create = async (subject, result) => {
                     '${subject.hour}'
                 )
             `)
-            
+                        
+            console.log(addSubjects);
             grade_ids.forEach(async (sys_grade_id) => {
                 const [addGradesSubjects] = await connection.raw(`
                     INSERT INTO sys_grades_subjects(
@@ -82,10 +83,6 @@ subjects.create = async (subject, result) => {
     } catch (error) {
         console.error('Error fetching subject from tenant database', error);
         result(error, null);
-    }finally {
-        // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects delete')
-        await dbSchool.closeConnection();
     }
 }
 

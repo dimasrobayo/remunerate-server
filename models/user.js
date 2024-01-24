@@ -480,18 +480,31 @@ User.updateWithOutImage = async (user, result) => {
         await connection.transaction(async trx => {
             // UPDATE PERSONAL INFO SESSION
             const [user_personal_info] = await connection.raw(`
-                UPDATE user_personal_info
-                SET
-                    name = '${user.name}',
-                    lastname = '${user.lastname}',
-                    mother_lastname = '${user.mother_lastname}',
-                    type_document = '${user.type_document}',
-                    document_number = '${user.document_number}',
-                    gender = '${user.gender}',
-                    phone = '${user.phone}',
-                    updated_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
-                WHERE
-                    id = ${user.id}
+                INSERT INTO
+                user_personal_info(
+                    name,
+                    lastname,
+                    mother_lastname,
+                    type_document,
+                    document_number,
+                    gender,
+                    phone
+                )VALUES(
+                    '${user.name}', 
+                    '${user.lastname}', 
+                    '${user.mother_lastname}', 
+                    '${user.type_document}', 
+                    '${user.document_number}', 
+                    '${user.gender}', 
+                    '${user.phone}'
+                )ON DUPLICATE KEY UPDATE
+                    name = VALUES(name), 
+                    lastname = VALUES(lastname), 
+                    mother_lastname = VALUES(mother_lastname),
+                    type_document = VALUES(type_document), 
+                    document_number = VALUES(document_number), 
+                    gender = VALUES(gender), 
+                    phone = VALUES(phone)
             `);
 
             // UPDATE CIVILIAN INFO SESSION
