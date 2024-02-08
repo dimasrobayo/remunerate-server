@@ -37,7 +37,6 @@ module.exports = {
     },
     async update(request, response) {
         const course = request.body; // CAPTURO LOS DATOS QUE ME ENVIE EL CLIENTE
-        console.log('course' + JSON.stringify(course));
         
         courses.update(course, (error, id) => {
             if (error) {

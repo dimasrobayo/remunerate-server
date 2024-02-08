@@ -116,7 +116,7 @@ teachers.create = async (teacher, result) => {
                 user_personal_info_id = VALUES(user_personal_info_id), 
                 birthdate = VALUES(birthdate),
                 country_birth = VALUES(country_birth),
-                nationality = VALUES(country_birth)
+                nationality = VALUES(nationality)
         `)
 
         // SE VINCULA EL REGISTRO DEL DOCENTE CON LA TABLA DE DOCENTES
@@ -129,7 +129,62 @@ teachers.create = async (teacher, result) => {
             )ON DUPLICATE KEY UPDATE
                 user_personal_info_id = VALUES(user_personal_info_id)
         `)
-        
+
+        // CONSULTA PARA OBTENER EL ID DEL TEACHER
+        const [sysTeachers] = await connection.raw(`
+            SELECT id FROM sys_teachers 
+            WHERE user_personal_info_id = ${user_personal_info_id}
+        `);
+        const sysTeachersId = sysTeachers[0].id;
+
+
+        // ADD OR UPDATE TO THE TEACHER
+        const [get_addresses] = await connection.raw(`
+            SELECT 
+                uapi.address_id, 
+                uapi.user_personal_info_id
+            FROM 
+                user_addresses_personal_info AS uapi
+            WHERE
+                uapi.user_personal_info_id = '${user_personal_info_id}'
+        `);
+
+        if (get_addresses.length > 0) {
+            const [updateAddress] = await connection.raw(`
+                UPDATE user_addresses
+                SET
+                    address = '${teacher.address}',
+                    department_number = '${teacher.department_number}',
+                    sys_community_id = '${teacher.sys_community_id}',
+                    updated_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
+                WHERE
+                    id = ${get_addresses[0].address_id}
+            `);
+        }else{
+            const [insertAddress] = await connection.raw(`
+                INSERT INTO
+                user_addresses(
+                    address,
+                    department_number,
+                    sys_community_id
+                )VALUES(
+                    '${teacher.address}',
+                    '${teacher.department_number}',
+                    '${teacher.sys_community_id}'
+                )
+            `);
+
+            const [insertAddressPersonalInfo] = await connection.raw(`
+                INSERT INTO user_addresses_personal_info(
+                    address_id,
+                    user_personal_info_id
+                )VALUES(
+                    '${insertAddress.insertId}',
+                    '${user_personal_info_id}'
+                )
+            `)
+        }
+
         coursesSelected.forEach(async (courseSelected) => {
             const [sys_courses_teachers] = await connection.raw(`
             INSERT INTO
@@ -139,17 +194,84 @@ teachers.create = async (teacher, result) => {
                     isBoss,
                     isInspector
                 )VALUES(
-                    2,
+                    ${sysTeachersId},
                     ${courseSelected.courseId},
                     ${courseSelected.isBoss},
                     ${courseSelected.isInspector}
-                )
+                )ON DUPLICATE KEY UPDATE
+                    sys_teachers_id = VALUES(sys_teachers_id),
+                    sys_courses_id = VALUES(sys_courses_id),
+                    isBoss = VALUES(isBoss),
+                    isInspector = VALUES(isInspector)
             `)
         });
 
         result(null, true);
     } catch (error) {
         console.error('Error fetching subject from tenant database', error);
+        result(error, null);
+    }
+}
+
+teachers.teacherByDocumentNumber = async (documetNumber, result) => {
+    const connection = await dbSchool.getConnection();
+
+    try {
+        const [teacher] = await connection.raw(`
+            SELECT 
+                upi.id AS id_personalInfo,
+                st.id AS id_teacher,
+                upi.name,
+                upi.lastname,
+                upi.mother_lastname,
+                upi.type_document,
+                upi.document_number,
+                upi.gender,
+                usi.email,
+                uci.birthdate,
+                upi.phone,
+                upi.image,
+                ua.address,
+                country_birth.name AS country_birth,
+                country_birth.id AS country_birth_id,
+                nationality.name AS nationality,
+                nationality.id AS nationality_id,
+                sc.id AS sys_community_id,
+                sr.id AS sys_regions_id,
+                ua.department_number
+            FROM sys_teachers AS st
+            LEFT JOIN user_personal_info AS upi ON st.user_personal_info_id = upi.id
+            LEFT JOIN user_social_information AS usi ON usi.user_personal_info_id = upi.id
+            LEFT JOIN user_civilian_information AS uci ON uci.user_personal_info_id = upi.id
+            LEFT JOIN user_addresses_personal_info AS uapi ON uapi.user_personal_info_id = upi.id
+            LEFT JOIN user_addresses AS ua ON uapi.address_id = ua.id
+            LEFT JOIN sys_community AS sc ON sc.id = ua.sys_community_id
+            LEFT JOIN sys_provinces AS sp ON sp.id = sc.provincia_id
+            LEFT JOIN sys_regions AS sr ON sr.id = sp.region_id
+            LEFT JOIN sys_countries AS country_birth ON country_birth.id = uci.country_birth
+            LEFT JOIN sys_countries AS nationality ON nationality.id = uci.nationality
+            WHERE st.deleted_at IS NULL AND st.deleted_at IS NULL AND upi.document_number = '${documetNumber}'
+            ORDER BY st.id;
+        `);
+
+        const [courseTeacher] = await connection.raw(`
+            SELECT
+                sg.name AS gradeName,
+                sc.name AS courseName,
+                sct.sys_courses_id,
+                sct.isBoss,
+                sct.isInspector
+            FROM
+                sys_courses_teachers AS sct
+            JOIN sys_courses AS sc ON sc.id = sct.sys_courses_id
+            JOIN sys_grades AS sg ON sg.id = sc.sys_grade_id 
+            WHERE sct.sys_teachers_id = ${teacher[0].id_teacher}
+        `)
+        teacher[0].courseTeacher = courseTeacher;
+
+        result(null, teacher[0])
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
 }

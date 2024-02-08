@@ -35,4 +35,22 @@ module.exports = {
             })
         })
     },
+    async teacherByDocumentNumber(request, response) {
+        const documetNumber = request.params.documetNumber;
+
+        teachers.teacherByDocumentNumber(documetNumber, (error, data) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con el registro la asignatura",
+                    error: 'Algo salio mal!'
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Asignatura encontrada con exito',
+                data: data
+            })
+        })
+    }
 }

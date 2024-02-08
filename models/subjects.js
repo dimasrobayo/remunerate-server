@@ -65,7 +65,6 @@ subjects.create = async (subject, result) => {
                 )
             `)
                         
-            console.log(addSubjects);
             grade_ids.forEach(async (sys_grade_id) => {
                 const [addGradesSubjects] = await connection.raw(`
                     INSERT INTO sys_grades_subjects(

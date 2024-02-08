@@ -9,6 +9,7 @@ module.exports = (app, upload) => {
 
     app.get('/api/teachers', passport.authenticate('jwt', {session: false}), teachersController.index);
     app.post('/api/teachers/create', passport.authenticate('jwt', {session: false}), teachersController.create);
+    app.get('/api/teachers/byDocumentNumber/:documetNumber', passport.authenticate('jwt', {session: false}), teachersController.teacherByDocumentNumber);
     // app.put('/api/teachers/update', passport.authenticate('jwt', {session: false}), teachersController.update);
     // app.delete('/api/teachers/delete/:id', passport.authenticate('jwt', {session: false}), teachersController.delete);
 }
