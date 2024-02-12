@@ -15,11 +15,7 @@ sys_files.getSysFilesById = async (id) => {
         console.error('Error fetching users from tenant database', error);
         return null;
     }
-    finally {
-        // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de getSysFilesById')
-        //await dbSchool.closeConnection();
-    }
+    
 }
 
 

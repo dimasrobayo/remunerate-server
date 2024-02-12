@@ -7,9 +7,9 @@ const tableName = 'user_civilian_information';
 
 user_civilian_information.create = async (user,user_personal_info_id,connection) => {
     //const connection = await dbSchool.getConnection();
-    console.log(user)
-    console.log("000000000000000")
-    console.log(user_personal_info_id)
+    //console.log(user)
+    //console.log("000000000000000")
+    
     try {
         const [createPersonalCivilianId] = await connection(tableName).insert(
             {

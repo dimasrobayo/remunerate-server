@@ -12,7 +12,6 @@ const userPersonalInfo = require('../models/userPersonalInfo');
 const userCivilianInfo = require('../models/userCivilianInfo');
 const sysTeachers = require('../models/sysTeachers');
 
-
 const canonicalNamesFields = {
   'Numero Documento' : 'document_number',
   'Digito Verificador' : 'document_number_dv',
@@ -23,8 +22,6 @@ const canonicalNamesFields = {
   'Fecha de Nacimiento' : 'birthdate',
   'RBD' : 'RBD'
 };
-
-
 
 const constraints = {
   document_number: { // Numero Documento
@@ -63,9 +60,8 @@ const constraints = {
     presence: { allowEmpty: false,
        message: 'The RBD field is required.' }
   },
-  
-  // Agrega más restricciones según tus necesidades
 };
+
 
 module.exports = {
     async upload(request, response) {
@@ -110,22 +106,18 @@ module.exports = {
             }
             // obtenemos los 3 registros
             const fileContent = await fs.promises.readFile(`${folderPathAsync}/${filename}`, 'utf8');
-
             // Divide las líneas del archivo
             const lines = fileContent.split('\n');
-
             // Utiliza map para aplicar str_getcsv a cada línea
             const data = lines.map((line) => line.split(','))
-
             // Extraer las primeras 3 filas
             const firstThreeRows = data.slice(0, 3);
-            
-            csv_data['csv_data'] = firstThreeRows;
             // get the column names for the table
-
+            csv_data['csv_data'] = firstThreeRows;
+            
             return response.status(201).json({
                 success: true,
-                message: 'Upload path.',
+                message: 'Archivo cargado con exito!',
                 data: csv_data 
             })
             
@@ -145,13 +137,6 @@ module.exports = {
         // get record sysfile
         let sysFileRecord = await sysFile.getSysFilesById(id);
         const keyMapping = request.body;
-        
-        if(Object.keys(keyMapping).length > Object.keys(canonicalNamesFields).length){
-          return response.status(401).json({
-            success: false,
-            message: 'supera el numeros de campos',
-          })
-        }
         // get the user who upload file by jwt
         const user = request.user
         // get current tenant
@@ -162,8 +147,13 @@ module.exports = {
         const folderPathAsync = path.join(parentDirectory, `uploads/${tenant}/tmp/`, `${1}`);
         //compose path
         const documentPath = path.join(folderPathAsync,`/${sysFileRecord.name}`);
-        console.log(documentPath);
-        const data = await readFileCSV(documentPath);
+        // get isHeader value
+        const {isHeader} = keyMapping;
+        // delete isHeader key from keyMapping
+        delete keyMapping.isHeader;
+        console.log(keyMapping);
+        // read file
+        const data = await readFileCSV(documentPath,isHeader);
         // mapings values with key in the request
         const results = data.map((item) => {
           const obj = {};
@@ -185,25 +175,30 @@ module.exports = {
           observaciones: '',
 
         }));
-        //console.log(modelData);
+        // validate teacher data rules
         const teachers = validateTeachers(modelData);
-        //console.log(teachers);
         await connection.transaction(async (transaction) => {
-          for (const teacher of teachers.dataValidate) {
-            const user = await userPersonalInfo.getByDocumentNumber(teacher.document_number, transaction);
-            if (typeof user === 'undefined') {
+          try {
+            for (const teacher of teachers.dataValidate) {
               const userPersonalInfoId = await userPersonalInfo.create(teacher, transaction);
-              await userCivilianInfo.create(teacher, userPersonalInfoId, transaction);
-              await sysTeachers.create(userPersonalInfoId, transaction);
+              if (userPersonalInfoId) {
+                await userCivilianInfo.create(teacher, userPersonalInfoId, transaction);
+                await sysTeachers.create(userPersonalInfoId, transaction);
+              }
             }
+            // Confirmar la transacción al final del bucle sin usar "await"
+            await transaction.commit();
+          } catch (error) {
+            // Manejar el error y realizar un rollback en caso de problemas
+            await transaction.rollback();
+            console.error('Error during transaction:', error);
+            // Puedes decidir lanzar o manejar el error según tus necesidades
           }
-          // Sucess queries
-          await transaction.commit();
         });
 
         return response.status(201).json({
           success: true,
-          message: 'success',
+          message: 'Datos importados con exito!',
           errors: teachers.errors
         })
       } catch (error) {
@@ -257,22 +252,7 @@ module.exports = {
         }
 
     },
-    async hello(request,response){
-      
-      try {
-        console.log('hello.............')
-        return response.status(201).json({
-          success: true,
-          message: 'id',
-        })
-      } catch (error) {
-        console.log(error);
-        return response.status(400).json({
-          success: false,
-          message: error,
-        })
-      }
-    }
+    
 }
 
 function createFolderIfNotExists(folderPath) {
@@ -293,7 +273,7 @@ function validateTeachers(modelData) {
   const errors = [];
   const dataValidate = [];
 
-  for (let i = 1; i < modelData.length; i++) {
+  for (let i = 0; i < modelData.length; i++) {
     const validationResult = validate(modelData[i], constraints);
     if (validationResult !== undefined) {
       const errores = validationResult;
