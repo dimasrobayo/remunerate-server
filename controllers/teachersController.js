@@ -52,5 +52,60 @@ module.exports = {
                 data: data
             })
         })
+    },
+    async deleteTeacherCourse(request, response) {
+        console.log(JSON.stringify(request.body, null, 3))
+        const {idSysCoursesTeachers} = request.body;
+
+        teachers.deleteTeacherCourse(idSysCoursesTeachers, (error, data) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con la eliminacion del curso asignado",
+                    error: 'Algo salio mal!'
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Curso Eliminado con Exito!',
+                data: data
+            })
+        })
+    },
+    async isBoss(request, response) {
+        const idCoursesTeacher = request.params.idCoursesTeacher;
+
+        teachers.isBoss(idCoursesTeacher, (error, data) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con el registro",
+                    error: 'Algo salio mal!'
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Proceso realizado con exito!',
+                data: data
+            })
+        })
+    },
+    async isInspector(request, response) {
+        const idCoursesTeacher = request.params.idCoursesTeacher;
+
+        teachers.isInspector(idCoursesTeacher, (error, data) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con el registro",
+                    error: 'Algo salio mal!'
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Proceso realizado con exito!',
+                data: data
+            })
+        })
     }
 }

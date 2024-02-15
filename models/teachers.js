@@ -195,7 +195,7 @@ teachers.create = async (teacher, result) => {
                     isInspector
                 )VALUES(
                     ${sysTeachersId},
-                    ${courseSelected.courseId},
+                    ${courseSelected.sys_courses_id},
                     ${courseSelected.isBoss},
                     ${courseSelected.isInspector}
                 )ON DUPLICATE KEY UPDATE
@@ -254,22 +254,89 @@ teachers.teacherByDocumentNumber = async (documetNumber, result) => {
             ORDER BY st.id;
         `);
 
-        const [courseTeacher] = await connection.raw(`
-            SELECT
-                sg.name AS gradeName,
-                sc.name AS courseName,
-                sct.sys_courses_id,
-                sct.isBoss,
-                sct.isInspector
-            FROM
-                sys_courses_teachers AS sct
-            JOIN sys_courses AS sc ON sc.id = sct.sys_courses_id
-            JOIN sys_grades AS sg ON sg.id = sc.sys_grade_id 
-            WHERE sct.sys_teachers_id = ${teacher[0].id_teacher}
-        `)
-        teacher[0].courseTeacher = courseTeacher;
+        if(teacher.length > 0){
+            const [courseTeacher] = await connection.raw(`
+                SELECT
+                    sg.name AS gradeName,
+                    sc.name AS courseName,
+                    sct.sys_courses_id,
+                    sct.id AS idSysCoursesTeachers,
+                    sct.isBoss,
+                    sct.isInspector
+                FROM
+                    sys_courses_teachers AS sct
+                JOIN sys_courses AS sc ON sc.id = sct.sys_courses_id
+                JOIN sys_grades AS sg ON sg.id = sc.sys_grade_id 
+                WHERE sct.sys_teachers_id = ${teacher[0].id_teacher}
+            `)
 
-        result(null, teacher[0])
+            teacher[0].courseTeacher = courseTeacher;
+            result(null, teacher[0])
+        } else {
+            result(null, {})
+        }
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
+        result(error, null);
+    }
+}
+
+teachers.deleteTeacherCourse = async (idSysCourseTeacher, result) => {
+    const connection = await dbSchool.getConnection();
+
+    try {
+        const [deleteTeacherCourse] = await connection.raw(`
+            DELETE 
+            FROM 
+                sys_courses_teachers 
+            WHERE id = ${idSysCourseTeacher}
+        `)
+        result(null, true);
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
+        result(error, null);
+    }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de Subjects delete')
+        await dbSchool.closeConnection();
+    }
+}
+
+teachers.isBoss = async (idCoursesTeacher, result) => {
+    const connection = await dbSchool.getConnection();
+
+    try {
+        const [isBoss] = await connection.raw(`
+            UPDATE 
+                sys_courses_teachers
+            SET
+                isBoss = CASE WHEN isBoss = 0 THEN 1 ELSE 0 END
+            WHERE
+                id = ${idCoursesTeacher}
+        `)
+
+        result(null, true)
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
+        result(error, null);
+    }
+}
+
+teachers.isInspector = async (idCoursesTeacher, result) => {
+    const connection = await dbSchool.getConnection();
+
+    try {
+        const [isBoss] = await connection.raw(`
+            UPDATE 
+                sys_courses_teachers
+            SET
+                isInspector = CASE WHEN isBoss = 0 THEN 1 ELSE 0 END
+            WHERE
+                id = ${idCoursesTeacher}
+        `)
+
+        result(null, true)
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
