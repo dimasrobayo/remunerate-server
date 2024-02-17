@@ -54,7 +54,6 @@ module.exports = {
         })
     },
     async deleteTeacherCourse(request, response) {
-        console.log(JSON.stringify(request.body, null, 3))
         const {idSysCoursesTeachers} = request.body;
 
         teachers.deleteTeacherCourse(idSysCoursesTeachers, (error, data) => {
