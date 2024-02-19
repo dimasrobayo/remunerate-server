@@ -106,5 +106,24 @@ module.exports = {
                 data: data
             })
         })
+    },
+    async delete(request, response) {
+        const id = request.params.id;
+
+        teachers.delete(id, (error, id) => {
+            if (error) {
+                return response.status(501).json({
+                    success: false,
+                    message: 'Hubo un error al eliminar la docente',
+                    error: error
+                });
+            }
+
+            return response.status(201).json({
+                success: true,
+                message: 'El docente se elimino correctamente',
+                data: `${id}`
+            });
+        });
     }
 }

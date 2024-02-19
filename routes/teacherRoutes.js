@@ -13,7 +13,7 @@ module.exports = (app, upload) => {
     app.post('/api/teachers/deleteTeacherCourse', passport.authenticate('jwt', {session: false}), teachersController.deleteTeacherCourse);
     app.get('/api/teachers/isBoss/:idCoursesTeacher', passport.authenticate('jwt', {session: false}), teachersController.isBoss);
     app.get('/api/teachers/isInspector/:idCoursesTeacher', passport.authenticate('jwt', {session: false}), teachersController.isInspector);
+    app.delete('/api/teachers/delete/:id', passport.authenticate('jwt', {session: false}), teachersController.delete);
     
     // app.put('/api/teachers/update', passport.authenticate('jwt', {session: false}), teachersController.update);
-    // app.delete('/api/teachers/delete/:id', passport.authenticate('jwt', {session: false}), teachersController.delete);
 }
