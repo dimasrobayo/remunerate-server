@@ -271,7 +271,7 @@ teachers.teacherByDocumentNumber = async (documetNumber, result) => {
                 WHERE sct.sys_teachers_id = ${teacher[0].id_teacher}
             `)
 
-            teacher[0].courseTeacher = courseTeacher;
+            teacher[0].courseTeacher = courseTeacher || [];
             result(null, teacher[0])
         } else {
             result(null, {})

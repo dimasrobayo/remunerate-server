@@ -42,7 +42,7 @@ module.exports = {
             if(error) {
                 return response.status(501).json({
                     success: false,
-                    message: "Error con el registro la asignatura",
+                    message: "Error con el registro del docente",
                     error: 'Algo salio mal!'
                 })
             }
