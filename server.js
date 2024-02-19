@@ -8,7 +8,7 @@ const cors = require('cors');
 const passport = require('passport');
 const multer = require('multer');
 
-app.use(cors());
+
 /*
 * MIDDLEWARE IDENTIFY TENANT
 */
@@ -18,6 +18,11 @@ app.use(tenantMiddleware);
 // MIDDLEWARE CONECTION TO DATA BASA SCHOOL
 const schoolMiddleware = require('./middleware/schoolMiddleware');
 app.use(schoolMiddleware);
+// Use cors middleware with the desired options
+app.use(cors({
+    origin: 'https://localhost:3000', // Replace with your actual frontend URL
+    credentials: true,
+  }));
 
 /*
 * IMPORT TO THE ROUTES
@@ -34,6 +39,7 @@ const utilsRoutes = require('./routes/utilsRoutes');
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
+
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -64,14 +70,17 @@ const upload = multer({
 * CALL TO THE ROUTES
 */
 useRoutes(app, upload);
+
 typeTeachingRoutes(app);
 gradesRoutes(app);
 coursesRoutes(app);
 subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
-teachersRoutes(app);
+teachersRoutes(app,upload);
 utilsRoutes(app);
+
+
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');
