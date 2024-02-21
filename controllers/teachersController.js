@@ -42,7 +42,7 @@ module.exports = {
             if(error) {
                 return response.status(501).json({
                     success: false,
-                    message: "Error con el registro la asignatura",
+                    message: "Error con el registro del docente",
                     error: 'Algo salio mal!'
                 })
             }
@@ -52,5 +52,78 @@ module.exports = {
                 data: data
             })
         })
+    },
+    async deleteTeacherCourse(request, response) {
+        const {idSysCoursesTeachers} = request.body;
+
+        teachers.deleteTeacherCourse(idSysCoursesTeachers, (error, data) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con la eliminacion del curso asignado",
+                    error: 'Algo salio mal!'
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Curso Eliminado con Exito!',
+                data: data
+            })
+        })
+    },
+    async isBoss(request, response) {
+        const idCoursesTeacher = request.params.idCoursesTeacher;
+
+        teachers.isBoss(idCoursesTeacher, (error, data) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con el registro",
+                    error: 'Algo salio mal!'
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Proceso realizado con exito!',
+                data: data
+            })
+        })
+    },
+    async isInspector(request, response) {
+        const idCoursesTeacher = request.params.idCoursesTeacher;
+
+        teachers.isInspector(idCoursesTeacher, (error, data) => {
+            if(error) {
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con el registro",
+                    error: 'Algo salio mal!'
+                })
+            }
+            return response.status(201).json({
+                success: true,
+                message: 'Proceso realizado con exito!',
+                data: data
+            })
+        })
+    },
+    async delete(request, response) {
+        const id = request.params.id;
+
+        teachers.delete(id, (error, id) => {
+            if (error) {
+                return response.status(501).json({
+                    success: false,
+                    message: 'Hubo un error al eliminar la docente',
+                    error: error
+                });
+            }
+
+            return response.status(201).json({
+                success: true,
+                message: 'El docente se elimino correctamente',
+                data: `${id}`
+            });
+        });
     }
 }

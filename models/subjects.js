@@ -112,58 +112,6 @@ subjects.update = async (subject, result) => {
         console.log('Cierra la conexión después de Subjects update')
         await dbSchool.closeConnection();
     }
-    
-    /*
-    const [subjectById] = await connection.raw(`
-        SELECT
-            sgs.id AS id_sys_grades_subjects
-        FROM sys_subjects AS ss
-        INNER JOIN sys_type_subjects AS sts ON sts.id = ss.sys_type_subjects_id
-        INNER JOIN sys_grades_subjects AS sgs ON sgs.sys_subjects_id = ss.id
-        INNER JOIN sys_grades AS sg ON sgs.sys_grade_id = sg.id
-        INNER JOIN sys_types_teachings AS stt ON stt.id = sg.sys_type_teaching_id
-        WHERE ss.id = ${id} AND sgs.deleted_at IS NULL
-        ORDER BY ss.id
-    `);
-
-    const selectDeleteSubjectsGradesToId = subjectById.filter(
-        subject =>  !grade_ids.includes(subject.id_grades)
-    );
-    
-    console.log('subjectGradeToday: ' + JSON.stringify(subjectById, null, 3));
-
-    console.log('grade_ids: ' + grade_ids);
-    
-    const deleteSubjectsGrades = await Promise.all(selectDeleteSubjectsGradesToId.map(async (subject) => {
-        const [deleteSubject] = await connection.raw(`
-            UPDATE sys_grades_subjects
-            SET
-                deleted_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
-            WHERE
-                id = ${subject.id_sys_grades_subjects}
-        `);
-        return deleteSubject;
-    }));
-    
-    console.log('subject: ' + JSON.stringify(subjectById, null, 3));
-    
-    try {
-        const [updateCourse] = await connection.raw(`
-            UPDATE sys_courses
-            SET
-                code_course  = '${course.code_course}',
-                name = '${course.name}',
-                sys_grade_id = '${course.sys_grade_id}',
-                updated_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
-            WHERE
-                id = ${course.id}
-        `)
-        
-    } catch (error) {
-        console.error('Error fetching users from tenant database', error);
-        result(error, null);
-    } 
-    */
 }
 
 subjects.delete = async (id, result) => {

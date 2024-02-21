@@ -1,7 +1,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const csvParser = require('csv-parser');
 const { parse } = require("csv-parse")
 const validate = require('validate.js');
 const _ = require('lodash');
@@ -168,6 +167,7 @@ module.exports = {
         const modelData = _.map(results, (obj) => ({
           ...obj,
           document_number: `${obj.document_number}-${obj.document_number_dv}`,
+          birthdate: changeDateFormat(obj.birthdate),
           type_document: 'run',
           phone: '',
           country_birth: '',
@@ -215,11 +215,6 @@ module.exports = {
 
       
       
-        
-    },
-    async update(request, response) {
-      const id = request.params.id;
-      console.log(id);
         
     },
     async delete(request, response) {
@@ -322,4 +317,15 @@ async function readFileCSV(path,withHeader = true) {
   } catch (error) {
     throw error;
   }
+}
+
+
+function changeDateFormat(date_string) {
+  // Check if the date_string contains slashes (/)
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(date_string)) {
+      // Reemplazar las barras con guiones
+      return date_string.replace(/\//g, '-');
+  }
+  // If the format is different, return the same date_string
+  return date_string;
 }
