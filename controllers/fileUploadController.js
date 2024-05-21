@@ -104,11 +104,11 @@ module.exports = {
               csv_data['columns'] = Object.keys(canonicalNamesFields)
             }
             // obtenemos los 3 registros
-            const fileContent = await fs.promises.readFile(`${folderPathAsync}/${filename}`, 'utf8');
+            const fileContent = await fs.promises.readFile(`${folderPathAsync}/${filename}`, 'latin1');
             // Divide las líneas del archivo
             const lines = fileContent.split('\n');
             // Utiliza map para aplicar str_getcsv a cada línea
-            const data = lines.map((line) => line.split(','))
+            const data = lines.map((line) => line.split(/[;,]/))
             // Extraer las primeras 3 filas
             const firstThreeRows = data.slice(0, 3);
             // get the column names for the table
@@ -153,6 +153,7 @@ module.exports = {
         console.log(keyMapping);
         // read file
         const data = await readFileCSV(documentPath,isHeader);
+        console.log(data);
         // mapings values with key in the request
         const results = data.map((item) => {
           const obj = {};
