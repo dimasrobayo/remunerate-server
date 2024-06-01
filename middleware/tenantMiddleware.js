@@ -23,13 +23,13 @@ async function tenantMiddleware(request, response, next) {
 
         // CONNECTION FOR TENANT
         const connection = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: dbSchool_name,
-    });
+            host: process.env.DB_HOST,
+            user: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            database: dbSchool_name,
+        });
     
-    // ATTACH THE CONNECTION TO REQUEST.DB
+        // ATTACH THE CONNECTION TO REQUEST.DB
         request.db = connection;
     
         // GET TO INFO THE TENANT
@@ -37,12 +37,16 @@ async function tenantMiddleware(request, response, next) {
             domain: domain,
             dbSchool_name: dbSchool_name,
         };
+
+         // Call next middleware
+         next();
+        
+         // Close connection after middleware chain is complete
+         await connection.end();
     } catch (err) {
         console.error('Error on identify tenant', err);
         return response.status(500).json({ error: 'Error on server in Middleware' });
     }
-
-    next();
 }
 
 module.exports = tenantMiddleware;

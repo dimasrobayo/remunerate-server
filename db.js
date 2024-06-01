@@ -16,6 +16,10 @@ class Database {
         password: process.env.DB_PASSWORD,
         database: dbSchoolName
       },
+      pool: {
+        min: 0,
+        max: 240, // Ajusta este valor según tus necesidades
+      }
     });
   }
 

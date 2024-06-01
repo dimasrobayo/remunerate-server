@@ -2,9 +2,8 @@ const dbSchool = require('../db');
 const teachers = {};
 
 teachers.getTeachers = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listCourse] = await connection.raw(`
         SELECT 
             st.id AS id_teacher,
@@ -39,10 +38,10 @@ teachers.getTeachers = async (result) => {
 }
 
 teachers.create = async (teacher, result) => {
-    const connection = await dbSchool.getConnection();
     const {coursesSelected} = teacher
-
+    
     try {
+        const connection = await dbSchool.getConnection();
         // SE REALIZA EL INSERT O UPDATE DEL DOCENTE DE DATOS PERSONALES.
         const [user_personal_info] = await connection.raw(`
             INSERT INTO
@@ -211,13 +210,15 @@ teachers.create = async (teacher, result) => {
     } catch (error) {
         console.error('Error fetching subject from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        await dbSchool.closeConnection();
     }
 }
 
 teachers.teacherByDocumentNumber = async (documetNumber, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [teacher] = await connection.raw(`
             SELECT 
                 upi.id AS id_personalInfo,
@@ -272,6 +273,7 @@ teachers.teacherByDocumentNumber = async (documetNumber, result) => {
             `)
 
             teacher[0].courseTeacher = courseTeacher || [];
+            console.log(teacher[0]);
             result(null, teacher[0])
         } else {
             result(null, {})
@@ -279,13 +281,15 @@ teachers.teacherByDocumentNumber = async (documetNumber, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        await dbSchool.closeConnection();
     }
 }
 
 teachers.deleteTeacherCourse = async (idSysCourseTeacher, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [deleteTeacherCourse] = await connection.raw(`
             DELETE 
             FROM 
@@ -296,18 +300,15 @@ teachers.deleteTeacherCourse = async (idSysCourseTeacher, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
-    }
-    finally {
+    } finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects delete')
         await dbSchool.closeConnection();
     }
 }
 
 teachers.isBoss = async (idCoursesTeacher, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [isBoss] = await connection.raw(`
             UPDATE 
                 sys_courses_teachers
@@ -321,13 +322,15 @@ teachers.isBoss = async (idCoursesTeacher, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        await dbSchool.closeConnection();
     }
 }
 
-teachers.isInspector = async (idCoursesTeacher, result) => {
-    const connection = await dbSchool.getConnection();
-
+teachers.isInspector = async (idCoursesTeacher, result) => { 
     try {
+        const connection = await dbSchool.getConnection();
         const [isBoss] = await connection.raw(`
             UPDATE 
                 sys_courses_teachers
@@ -341,13 +344,15 @@ teachers.isInspector = async (idCoursesTeacher, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        await dbSchool.closeConnection();
     }
 }
 
 teachers.delete = async (id, result) => {
-    const connection = await dbSchool.getConnection();
-    console.log(id)
     try {
+        const connection = await dbSchool.getConnection();
         const [deleteTeacher] = await connection.raw(`
             UPDATE 	sys_teachers
             SET
@@ -359,10 +364,8 @@ teachers.delete = async (id, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
-    }
-    finally {
+    } finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects delete')
         await dbSchool.closeConnection();
     }
 }

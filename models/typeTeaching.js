@@ -2,9 +2,8 @@ const dbSchool = require('../db');
 const typesTeaching = {};
 
 typesTeaching.getTypeTeaching = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listTypeTeaching] = await connection.raw(`
             SELECT 
                 *
@@ -25,9 +24,8 @@ typesTeaching.getTypeTeaching = async (result) => {
 }
 
 typesTeaching.create = async (type, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [createTypeTeaching] = await connection.raw(`
             INSERT INTO sys_types_teachings(
                 codigo,
@@ -51,9 +49,8 @@ typesTeaching.create = async (type, result) => {
 }
 
 typesTeaching.edit = async (id, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [editTypeTeaching] = await connection.raw(`
             SELECT 
                 *

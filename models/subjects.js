@@ -2,9 +2,8 @@ const dbSchool = require('../db');
 const subjects = {};
 
 subjects.getSubjects = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listSubjects] = await connection.raw(`
             SELECT
                 ss.id,
@@ -43,9 +42,8 @@ subjects.getSubjects = async (result) => {
 }
 
 subjects.create = async (subject, result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const { grade_ids, typesubjects_ids } = subject;
         
         typesubjects_ids.forEach(async (sys_type_subjects_id) => {
@@ -86,10 +84,10 @@ subjects.create = async (subject, result) => {
 }
 
 subjects.update = async (subject, result) => {
-    const connection = await dbSchool.getConnection();
     const { id, grade_ids, name, code_mineduc, color, hour } = subject;
     
     try {
+        const connection = await dbSchool.getConnection();
         const [updateSubject] = await connection.raw(`
             UPDATE sys_subjects
             SET
@@ -115,9 +113,8 @@ subjects.update = async (subject, result) => {
 }
 
 subjects.delete = async (id, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [deleteSubject] = await connection.raw(`
             UPDATE sys_subjects
             SET

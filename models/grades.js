@@ -2,9 +2,8 @@ const dbSchool = require('../db');
 const grades = {};
 
 grades.getGrades = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listGrades] = await connection.raw(`
             SELECT 
                 tt.id AS id_type_teaching,
@@ -30,9 +29,8 @@ grades.getGrades = async (result) => {
 }
 
 grades.create = async (grade, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [createGrade] = await connection.raw(`
             INSERT INTO sys_grades(
                 code_grade,
@@ -58,9 +56,8 @@ grades.create = async (grade, result) => {
 }
 
 grades.update = async (grade, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [updateGrade] = await connection.raw(`
             UPDATE sys_grades
             SET
@@ -84,9 +81,8 @@ grades.update = async (grade, result) => {
 }
 
 grades.delete = async (id, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [deleteGrade] = await connection.raw(`
             UPDATE sys_grades
             SET

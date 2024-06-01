@@ -2,9 +2,8 @@ const dbSchool = require('../db');
 const courses = {};
 
 courses.getCourses = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listCourse] = await connection.raw(`
             SELECT 
                 sg.id AS id_grade,
@@ -30,9 +29,8 @@ courses.getCourses = async (result) => {
 }
 
 courses.create = async (course, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [createCourse] = await connection.raw(`
             INSERT INTO sys_courses(
                 name,
@@ -58,9 +56,8 @@ courses.create = async (course, result) => {
 }
 
 courses.update = async (course, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [updateCourse] = await connection.raw(`
             UPDATE sys_courses
             SET
@@ -84,9 +81,8 @@ courses.update = async (course, result) => {
 }
 
 courses.delete = async (id, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
+        const connection = await dbSchool.getConnection();
         const [deleteGrade] = await connection.raw(`
             UPDATE sys_courses
             SET

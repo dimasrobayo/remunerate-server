@@ -2,9 +2,8 @@ const dbSchool = require('../db');
 const typeSubjects = {};
 
 typeSubjects.getTypeSubjects = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listTypeSubjects] = await connection.raw(`
             SELECT
                 sts.*

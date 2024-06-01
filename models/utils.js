@@ -2,9 +2,8 @@ const dbSchool = require('../db');
 const utils = {};
 
 utils.getRegions = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listRegions] = await connection.raw(`
             SELECT 
                 sr.*
@@ -16,13 +15,15 @@ utils.getRegions = async (result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        await dbSchool.closeConnection();
     }
 }
 
 utils.communityByRegions = async (id, result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listRegions] = await connection.raw(`
             SELECT 
                 sc.id,
@@ -40,13 +41,15 @@ utils.communityByRegions = async (id, result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        await dbSchool.closeConnection();
     }
 }
 
 utils.getCountries = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
+        const connection = await dbSchool.getConnection();
         const [listRegions] = await connection.raw(`
             SELECT 
                 sc.*
@@ -58,6 +61,9 @@ utils.getCountries = async (result) => {
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        await dbSchool.closeConnection();
     }
 }
 
