@@ -1,5 +1,6 @@
 const dbSchool = require('../db');
 const courses = {};
+const tableName = 'sys_courses as sg';
 
 courses.getCourses = async (result) => {
     const connection = await dbSchool.getConnection();
@@ -24,9 +25,64 @@ courses.getCourses = async (result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de getCourses')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de getCourses')
+        //await dbSchool.closeConnection();
     }
+}
+
+courses.getCoursesByparams = async (params,connection_trx) => {
+    const connection = connection_trx;
+    try {
+        const [courses] = await  connection.select('*').from(tableName).where(params).whereNull('deleted_at');
+        return courses;
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
+        return null;
+    }
+
+}
+
+courses.getCoursesByCodeGradeAndCourseName = async (params,connection_trx) => {
+    const connection = connection_trx;
+    
+    try {
+        const [listCourse] = await connection.raw(`
+        SELECT 
+            sg.id as grade_id,
+            sg.code_grade,
+            sg.name as grade_name,
+            sc.id as curso_id,
+            sc.name,
+            sc.code_course
+        FROM 
+            sys_grades sg
+        INNER JOIN 
+            sys_courses sc
+        ON 
+            sg.id = sc.sys_grade_id
+        INNER JOIN 
+            sys_types_teachings stt
+        ON 
+            sg.sys_type_teaching_id = stt.id
+        WHERE 
+            sg.code_grade = '${params.code_grade}' 
+            AND sc.letter_course LIKE '${params.letter_course}%'
+            AND stt.codigo = '${params.cod_type_teacher}' 
+        ORDER BY 
+            sg.code_grade, sc.name;
+        `);
+
+        return listCourse.length ? listCourse : null
+    } catch (error) {
+        console.error('Error fetching users from tenant database', error);
+        result(error, null);
+    }
+    finally {
+        // Cierra la conexión después de realizar las operaciones
+        //console.log('Cierra la conexión después de getCourses')
+        //await dbSchool.closeConnection();
+    }
+
 }
 
 courses.create = async (course, result) => {

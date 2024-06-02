@@ -35,6 +35,7 @@ const typeSubjectsRoutes = require('./routes/typeSubjects');
 const subjectRoutes = require('./routes/subjectsRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 const teachersRoutes = require('./routes/teacherRoutes');
+const matriculaUploadRoutes = require('./routes/matriculaUploadRoutes');
 const utilsRoutes = require('./routes/utilsRoutes');
 
 const PORT = process.env.PORT;
@@ -78,6 +79,7 @@ subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
 teachersRoutes(app,upload);
+matriculaUploadRoutes(app,upload);
 utilsRoutes(app);
 
 
