@@ -3,7 +3,7 @@ const subjects = {};
 
 subjects.getSubjects = async (result) => {
     try {
-        const connection = dbSchool.getConnection();
+        const connection = await dbSchool.getConnection();
         const listSubjects = await connection('sys_subjects as ss')
             .select(
                 'ss.id',
@@ -34,7 +34,7 @@ subjects.getSubjects = async (result) => {
 
 subjects.create = async (subject, result) => {
     try {
-        const connection = dbSchool.getConnection();
+        const connection = await dbSchool.getConnection();
         const { 
             grade_ids, 
             typesubjects_ids, 
@@ -44,7 +44,9 @@ subjects.create = async (subject, result) => {
             hour
         } = subject;
         
-        typesubjects_ids.forEach(async (sys_type_subjects_id) => {
+        let success = true;
+
+        for (const sys_type_subjects_id of typesubjects_ids) {
             const addSubjects = await connection('sys_subjects')
             .insert({
                 sys_type_subjects_id: sys_type_subjects_id,
@@ -54,18 +56,30 @@ subjects.create = async (subject, result) => {
                 hour: hour
             });
 
-            grade_ids.forEach(async (sys_grade_id) => {
+            if (!addSubjects || !addSubjects[0]) {
+                success = false;
+                break;
+            }
+
+            for (const sys_grade_id of grade_ids) {
                 const addGradesSubjects = await connection('sys_grades_subjects').insert({
                     sys_grade_id: sys_grade_id,
                     sys_subjects_id: addSubjects[0]
-                })
-            });
-        });
+                });
 
-        result(null, true);
+                if (!addGradesSubjects || !addGradesSubjects[0]) {
+                    success = false;
+                    break;
+                }
+            };
+        };
+
+        result(null, success);
     } catch (error) {
-        console.error('Error fetching subject from tenant database', error);
         result(error, null);
+    } finally {
+        // Cierra la conexión después de realizar las operaciones
+        dbSchool.closeConnection();
     }
 }
 
@@ -78,6 +92,8 @@ subjects.update = async (subject, result) => {
         color, 
         hour 
     } = subject;
+
+    let success = true;
     
     try {
         const connection = await dbSchool.getConnection();
@@ -94,8 +110,7 @@ subjects.update = async (subject, result) => {
         result(null, updateSubject[0]);
     } catch (error) {
         result(error, null);
-    }
-    finally {
+    } finally {
         dbSchool.closeConnection();
     }
 }
@@ -103,20 +118,20 @@ subjects.update = async (subject, result) => {
 subjects.delete = async (id, result) => {
     try {
         const connection = await dbSchool.getConnection();
+        
         const deleteSubject = await connection('sys_subjects')
         .where('id', id)
         .update({
             deleted_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
         })
+
         result(null, deleteSubject[0]);
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
-    }
-    finally {
+    } finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects delete')
-        await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 
