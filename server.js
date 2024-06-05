@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -7,22 +8,8 @@ const logger = require('morgan');
 const cors = require('cors');
 const passport = require('passport');
 const multer = require('multer');
-
-
-/*
-* MIDDLEWARE IDENTIFY TENANT
-*/
-const tenantMiddleware = require('./middleware/tenantMiddleware');
-app.use(tenantMiddleware);
-
-// MIDDLEWARE CONECTION TO DATA BASA SCHOOL
-const schoolMiddleware = require('./middleware/schoolMiddleware');
-app.use(schoolMiddleware);
-// Use cors middleware with the desired options
-app.use(cors({
-    origin: 'https://localhost:3000', // Replace with your actual frontend URL
-    credentials: true,
-  }));
+const sessionConfig = require('./utils/sessionConfig');
+require('./config/passport')(passport);
 
 /*
 * IMPORT TO THE ROUTES
@@ -40,6 +27,21 @@ const utilsRoutes = require('./routes/utilsRoutes');
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
 
+/*
+* MIDDLEWARE IDENTIFY TENANT
+*/
+const tenantMiddleware = require('./middleware/tenantMiddleware');
+app.use(tenantMiddleware);
+
+// MIDDLEWARE CONECTION TO DATA BASE SCHOOL
+const schoolMiddleware = require('./middleware/schoolMiddleware');
+app.use(schoolMiddleware);
+
+// Use cors middleware with the desired options
+app.use(cors({
+    origin: 'https://localhost:3000', // Replace with your actual frontend URL
+    credentials: true,
+}));
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -47,17 +49,12 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-// Desactivar CORS
-// app.use((req, res, next) => {
-//     res.header('Access-Control-Allow-Origin', '*'); // Permitir acceso desde cualquier origen
-//     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//     next();
-// });
+// Configurar express-session
+app.use(sessionConfig);
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-require('./config/passport')(passport);
 
 app.disable('x-powered-by');
 app.set('port', PORT);
@@ -70,17 +67,14 @@ const upload = multer({
 * CALL TO THE ROUTES
 */
 useRoutes(app, upload);
-
 typeTeachingRoutes(app);
 gradesRoutes(app);
 coursesRoutes(app);
 subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
-teachersRoutes(app,upload);
+teachersRoutes(app, upload);
 utilsRoutes(app);
-
-
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');

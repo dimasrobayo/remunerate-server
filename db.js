@@ -1,42 +1,30 @@
-require('dotenv').config();
-
 const knex = require('knex');
+const config = require('./utils/knexfile'); // Asegúrate de que el archivo knexfile.js esté configurado
 
-class Database {
-  constructor() {
-    this.connection = null;
-  }
+let db;
 
-  async connect(dbSchoolName) {
-    this.connection = knex({
-      client: 'mysql',
-      connection: {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: dbSchoolName
-      },
-      pool: {
-        min: 0,
-        max: 240, // Ajusta este valor según tus necesidades
-      }
-    });
-  }
-
-  async getConnection() {
-    if (!this.connection) {
-      throw new Error('Database connection not initialized.');
+module.exports = {
+    connect(dbSchoolName) {
+        db = knex({
+            client: 'mysql2',
+            connection: {
+                host: process.env.DB_HOST,
+                user: process.env.DB_USERNAME,
+                password: process.env.DB_PASSWORD,
+                database: dbSchoolName
+            }
+        });
+    },
+    getConnection() {
+        if (!db) {
+            throw new Error('Database not connected');
+        }
+        return db;
+    },
+    closeConnection() {
+        if (db) {
+            db.destroy();
+            db = null;
+        }
     }
-    return this.connection;
-  }
-
-  async closeConnection() {
-    if (this.connection) {
-      await this.connection.destroy();
-      this.connection = null;
-    }
-  }
-}
-
-const database = new Database();
-module.exports = database;
+};

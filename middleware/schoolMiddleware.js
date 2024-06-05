@@ -4,7 +4,7 @@ async function schoolMiddleware(request, response, next) {
     try {
         const { dbSchool_name } = request.dbInfo;
 
-        await dbSchool.connect(dbSchool_name);
+        dbSchool.connect(dbSchool_name);
         next();
     } catch (err) {
         console.error('Error connecting to tenant database', err);
