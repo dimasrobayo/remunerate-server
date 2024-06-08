@@ -108,8 +108,8 @@ courses.create = async (course, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Courses create')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Courses create')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -134,8 +134,8 @@ courses.update = async (course, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Courses update')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Courses update')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -157,8 +157,8 @@ courses.delete = async (id, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Courses delete')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Courses delete')
+        //await dbSchool.closeConnection();
     }
 }
 

@@ -299,8 +299,8 @@ teachers.deleteTeacherCourse = async (idSysCourseTeacher, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects delete')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Subjects delete')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -362,8 +362,8 @@ teachers.delete = async (id, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects delete')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Subjects delete')
+        //await dbSchool.closeConnection();
     }
 }
 

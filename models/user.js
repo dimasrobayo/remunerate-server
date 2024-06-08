@@ -124,8 +124,8 @@ User.findByEmail = async(email, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de realiza')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de realiza')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -206,7 +206,7 @@ User.register = async (user, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de realizar el register')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -348,7 +348,7 @@ User.registerWithImage = async (user, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de realizar el register with image')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -379,7 +379,7 @@ User.findByUsers = async (result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de findByUsers')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -465,7 +465,7 @@ User.findUsersById = async (id, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de findUsersById')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -645,7 +645,7 @@ User.updateWithOutImage = async (user, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de updateWithOutImage')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 

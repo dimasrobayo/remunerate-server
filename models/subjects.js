@@ -37,8 +37,8 @@ subjects.getSubjects = async (result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de getSubjects')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de getSubjects')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -109,8 +109,8 @@ subjects.update = async (subject, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects update')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Subjects update')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -132,8 +132,8 @@ subjects.delete = async (id, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Subjects delete')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Subjects delete')
+        //await dbSchool.closeConnection();
     }
 }
 

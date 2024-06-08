@@ -45,8 +45,8 @@ sys_files.create = async (file, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de sys_files create')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de sys_files create')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -70,8 +70,8 @@ sys_files.update = async (id) =>{
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de update')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de update')
+        //await dbSchool.closeConnection();
     }
 };
 
@@ -89,8 +89,8 @@ sys_files.delete = async (id, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Teaching delete')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Teaching delete')
+        //await dbSchool.closeConnection();
     }
 }
 

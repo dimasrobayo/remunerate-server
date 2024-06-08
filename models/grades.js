@@ -24,8 +24,8 @@ grades.getGrades = async (result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de getGrades')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de getGrades')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -78,8 +78,8 @@ grades.update = async (grade, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de update grades')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de update grades')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -101,8 +101,8 @@ grades.delete = async (id, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de delete grades')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de delete grades')
+        //await dbSchool.closeConnection();
     }
 }
 

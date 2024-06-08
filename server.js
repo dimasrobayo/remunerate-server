@@ -35,7 +35,7 @@ const typeSubjectsRoutes = require('./routes/typeSubjects');
 const subjectRoutes = require('./routes/subjectsRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 const teachersRoutes = require('./routes/teacherRoutes');
-const matriculaUploadRoutes = require('./routes/matriculaUploadRoutes');
+const matriculaUploadRoutes = require('./routes/matriculaRoutes');
 const utilsRoutes = require('./routes/utilsRoutes');
 
 const PORT = process.env.PORT;
