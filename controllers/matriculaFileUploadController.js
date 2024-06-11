@@ -361,7 +361,11 @@ module.exports = {
         const updatedStudents = await Promise.all(_.map(modelData, async (student) => {
           // add course
           const course = await courses.getCoursesByCodeGradeAndCourseName(
-              { letter_course: student.letter_course, code_grade: student.cod_grade,cod_type_teacher:student.cod_type_teacher },
+              { 
+                letter_course: student.letter_course, 
+                code_grade: student.cod_grade,
+                cod_type_teacher:student.cod_type_teacher 
+              },
               connection
           );
           // add school period
@@ -388,6 +392,7 @@ module.exports = {
             }
             await transaction.commit();
           } catch (error) {
+            await transaction.rollback();
             console.log('Error in userPersonalInfo save: ' + error.message)
           }
         });
@@ -403,6 +408,7 @@ module.exports = {
             await transaction.commit();
             
           } catch (error) {
+            await transaction.rollback();
             //console.log(error);
             //console.log('Error in adrres save: ' + error.message)
           }
@@ -425,6 +431,7 @@ module.exports = {
             await transaction.commit();
             
           } catch (error) {
+            await transaction.rollback();
             console.log('Error in civilian save: ' + error.message)
           }
         })
@@ -445,6 +452,7 @@ module.exports = {
             await transaction.commit();
             
           } catch (error) {
+            await transaction.rollback();
             console.log('Error in civilian save: ' + error.message)
           }
         })
@@ -488,6 +496,7 @@ module.exports = {
             await transaction.commit();
             
           } catch (error) {
+            await transaction.rollback();
             console.log('Error in civilian save: ' + error.message)
           }
         })
@@ -515,6 +524,7 @@ module.exports = {
             }
             
           } catch (error) {
+            await transaction.rollback();
             console.log('Error in matricula observation ',error)
           }
         });
