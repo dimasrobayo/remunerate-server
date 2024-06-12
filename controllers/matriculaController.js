@@ -19,11 +19,30 @@ const sysMatriculaObservation= require('../models/sysMatriculaObservation')
 
 
 module.exports = {
-    index(request, response) {
-        return response.status(201).json({
-            success: true,
-            message: 'Listado de matriculas.',
-        })
+    async index(request, response) {
+        const connection = await dbSchool.getConnection();
+        try {
+
+            const matriculas = await sysMatricula.get({},connection);
+            return response.status(201).json({
+                success: true,
+                message: 'Listado de matriculas.',
+                data: matriculas
+            })
+            
+        } catch (error) {
+            console.log(error);
+            return response.status(201).json({
+                success: false,
+                message: error,
+            })
+        }finally{
+            // Cierra la conexión después de realizar las operaciones
+            console.log('closed conection....')
+            await dbSchool.closeConnection();
+        }
+
+        
     },
     async create(request, response) {
         const obj = request.body;
@@ -35,8 +54,8 @@ module.exports = {
             let student = {
                 ...obj,
                 name: obj.name.toLowerCase(),
-                lastname: obj.name.toLowerCase(),
-                mother_lastname: obj.name.toLowerCase(),
+                lastname: obj.lastname.toLowerCase(),
+                mother_lastname: obj.mother_lastname.toLowerCase(),
                 birthdate: changeDateFormat(obj.date_birth),
                 direccion: obj.direccion.toLowerCase(),
                 phone: obj.phone,
@@ -151,10 +170,10 @@ module.exports = {
                         let sys_courses_id = student.course[0].curso_id;
                         let cod_matricula = `${student.document_number}_${sys_courses_id}_${student.sysSchool.año_escolar}`;
 
-                        let ifMatriculaExits = await sysMatricula.get({ cod_matricula: cod_matricula });
+                        let ifMatriculaExits = await sysMatricula.get({ cod_matricula: cod_matricula },transaction);
                         console.log("------------------->")
                         console.log(ifMatriculaExits);
-                        if (ifMatriculaExits === undefined) {
+                        if (!ifMatriculaExits.length) {
                             // add date create_at update_at
                             let create_date = moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS');
                             let date_matricula = moment().format('YYYY-MM-DD');
@@ -220,7 +239,6 @@ module.exports = {
             })
 
         } catch (error) {
-            console.log(error);
             return response.status(201).json({
                 success: false,
                 message: error,
@@ -240,11 +258,41 @@ module.exports = {
         })
     },
     async delete(request, response) {
-        return response.status(201).json({
-            success: true,
-            message: 'Matricula eliminada con exito',
-            //data: data
-        })
+        const id = request.params.id;
+        const connection = await dbSchool.getConnection();
+
+        try {
+            const matriculas = await sysMatricula.get({id: id},connection);
+            console.log(matriculas.length)
+            if (matriculas.length > 0) {
+                await sysMatricula.update(id,{'deleted_at': new Date()},connection)
+                
+            }
+
+
+
+            return response.status(201).json({
+                success: true,
+                message: 'Matricula eliminada con exito',
+                //data: matriculas
+            })
+            
+        } catch ({ name, message }) {
+            console.log(name); // "TypeError"
+            console.log(message); 
+
+            return response.status(201).json({
+                success: false,
+                message: message,
+            })
+            
+        }finally {
+            // Cierra la conexión después de realizar las operaciones
+            console.log('closed conection....')
+            await dbSchool.closeConnection();
+
+        }
+        
     }
 }
 

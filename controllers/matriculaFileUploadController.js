@@ -466,9 +466,9 @@ module.exports = {
               let sys_courses_id = student.course[0].curso_id;
               let cod_matricula = `${student.document_number}_${sys_courses_id}_${student.año_escolar}`;
               
-              let ifMatriculaExits = await sysMatricula.get({cod_matricula:cod_matricula});
+              let ifMatriculaExits = await sysMatricula.get({cod_matricula:cod_matricula},connection);
               console.log(ifMatriculaExits);
-              if (ifMatriculaExits === undefined) {
+              if (!ifMatriculaExits.length) {
                 // add date create_at update_at
                 let create_date = moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS');
                 let date_matricula = moment().format('YYYY-MM-DD');
