@@ -20,8 +20,9 @@ const sysMatriculaObservation= require('../models/sysMatriculaObservation')
 
 module.exports = {
     async index(request, response) {
-        const connection = await dbSchool.getConnection();
+        
         try {
+            const connection = await dbSchool.getConnection();
 
             const matriculas = await sysMatricula.get({},connection);
             return response.status(201).json({
@@ -45,9 +46,9 @@ module.exports = {
         
     },
     async create(request, response) {
-        const obj = request.body;
-        const connection = await dbSchool.getConnection();
         try {
+            const obj = request.body;
+            const connection = await dbSchool.getConnection();
             // get the user who upload file by jwt
             const user = request.user
             // copy obj to toLowerCase
@@ -57,7 +58,6 @@ module.exports = {
                 lastname: obj.lastname.toLowerCase(),
                 mother_lastname: obj.mother_lastname.toLowerCase(),
                 birthdate: changeDateFormat(obj.date_birth),
-                direccion: obj.direccion.toLowerCase(),
                 phone: obj.phone,
                 phone_aux: obj.phone_aux,
                 email: obj.email.toLowerCase(),
@@ -66,7 +66,6 @@ module.exports = {
                 observaciones: '',
                 codigo_postal: null,
                 department_number: 'No especificado',
-                address: obj.direccion.toLowerCase(),
                 cod_modality: '0001'
             };
 
@@ -83,10 +82,17 @@ module.exports = {
             const sysSchool = await sysSchoolPeriod.getSchoolPeriodsByparams({id:student.sys_school_id},connection);
             // add matricula modality
             const matriculaModal = await sysMatriculaModality.getMatriculaModalityByparams({id:student.cod_modality_id},connection);
-            // add sys_comunity
-            const sys_comunity = await sysCommunity.getCommunityByparams({id:student.sys_comunity_id},connection);
-
-            student = { ...student, course, sysSchool, matriculaModal, sys_comunity };
+            // check by address fields array with sys_comunity
+            for (let index = 0; index < student.address.length; index++) {
+                const address = student.address[index];
+                let comunity = await sysCommunity.getCommunityByparams({id:address.sys_community_id},connection);
+                if(comunity) {
+                    student.address[index].provincia_id = comunity.provincia_id; 
+                }else{
+                    student.address.splice(index, 1);
+                }
+            }
+            student = { ...student, course, sysSchool, matriculaModal};
             
 
             // validate students data rules
@@ -104,26 +110,30 @@ module.exports = {
                         console.log('Error in userPersonalInfo save: ' + error.message)
                     }
                 });
-
-                // save address information
+                // save address
                 await connection.transaction(async (transaction) => {
-                    try {
-
-                        const addressesID = await userAddresses.create(student, student.sys_comunity.id, transaction)
-                        await userAddressesPersonalInfo.create(
-                            {
-                                address_id: addressesID,
-                                user_personal_info_id: student.user_personal_info_id
-                            }, transaction)
-
-                        await transaction.commit();
-
-                    } catch (error) {
-                        //console.log(error);
-                        await transaction.rollback();
-                        console.log('Error in adrres save: ' + error.message)
+                    for (let index = 0; index < student.address.length; index++) {
+                        const address = student.address[index];
+                        // check if provincia_id exits
+                        if (address.hasOwnProperty('provincia_id')) {
+                            try {
+                                const addressesID = await userAddresses.create(address, address.sys_community_id, transaction);
+                                await userAddressesPersonalInfo.create(
+                                    {
+                                        address_id: addressesID,
+                                        user_personal_info_id: student.user_personal_info_id
+                                    }, 
+                                    transaction  
+                                );
+                            } catch (error) {
+                                // Lanza el error para manejarlo en el catch exterior
+                                throw new Error('Error in address save: ' + error.message);
+                            }
+                            
+                        }
                     }
-                })
+                });
+                
 
                 // save userCivilianInfo
                 await connection.transaction(async (transaction) => {
@@ -238,10 +248,12 @@ module.exports = {
                 studentsValidate
             })
 
-        } catch (error) {
+        } catch ({ name, message }) {
+            console.log(name); // "TypeError"
+            console.log(message); 
             return response.status(201).json({
                 success: false,
-                message: error,
+                message: message,
             })
         } finally {
             // Cierra la conexión después de realizar las operaciones

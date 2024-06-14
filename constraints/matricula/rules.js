@@ -249,11 +249,9 @@ const constraints = {
                 message: 'The  field is required.'
             }
         },
-        direccion: {
-            presence: {
-                allowEmpty: false,
-                message: 'The  field is required.'
-            }
+        address: {
+            presence: true,
+            isArrayWithLength: true
         },
         comunity_residence_id: {
             presence: {
