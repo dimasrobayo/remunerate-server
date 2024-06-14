@@ -46,7 +46,7 @@ courses.create = async (course, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de Courses create')
-        await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 

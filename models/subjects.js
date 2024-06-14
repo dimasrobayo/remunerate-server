@@ -12,6 +12,9 @@ subjects.getSubjects = async (result) => {
                 'ss.name',
                 'ss.color',
                 'ss.hour',
+                'ss.created_at',
+                'ss.updated_at',
+                'ss.deleted_at',
                 connection.raw('JSON_ARRAYAGG(JSON_OBJECT(\'id\', sg.id, \'name\', sg.name, \'type_grade\', stt.name)) as grades')
             )
             .innerJoin('sys_type_subjects as sts', 'sts.id', 'ss.sys_type_subjects_id')
@@ -25,7 +28,6 @@ subjects.getSubjects = async (result) => {
             
         result(null, listSubjects);
     } catch (error) {
-        console.error('Error fetching subjects from tenant database', error);
         result(error, null);
     } finally {
         dbSchool.closeConnection();

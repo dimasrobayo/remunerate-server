@@ -38,20 +38,21 @@ module.exports = {
     async teacherByDocumentNumber(request, response) {
         const documetNumber = request.params.documetNumber;
         
-        try {
-            const data = await util.promisify(teachers.teacherByDocumentNumber)(documetNumber);
+        teachers.teacherByDocumentNumber(documetNumber, (error, data) => {
+            if(error) {
+                console.log(error)
+                return response.status(501).json({
+                    success: false,
+                    message: "Error con el registro la asignatura",
+                    error: 'Algo salio mal!'
+                })
+            }
             return response.status(201).json({
                 success: true,
-                message: 'Asignatura encontrada con exito',
+                message: 'Asignatura registrada con exito',
                 data: data
-            });
-        } catch (error) {
-            return response.status(501).json({
-                success: false,
-                message: "Error con el registro del docente",
-                error: 'Algo salio mal!'
-            });
-        }
+            })
+        });
     },
     async deleteTeacherCourse(request, response) {
         const {idSysCoursesTeachers} = request.body;

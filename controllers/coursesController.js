@@ -20,7 +20,7 @@ module.exports = {
     async create(request, response) {
         const course = request.body // SE CAPTURAN LOS DATOS QUE ME ENVIE EL CLIENTE
         
-        courses.create(course, (error, data) => {
+        await courses.create(course, (error, data) => {
             if(error) {
                 return response.status(501).json({
                     success: false,
@@ -34,6 +34,7 @@ module.exports = {
                 data: data
             })
         })
+
     },
     async update(request, response) {
         const course = request.body; // CAPTURO LOS DATOS QUE ME ENVIE EL CLIENTE

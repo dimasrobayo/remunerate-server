@@ -1,69 +1,62 @@
+const { orderBy } = require('lodash');
 const dbSchool = require('../db');
 const utils = {};
 
 utils.getRegions = async (result) => {
     try {
         const connection = await dbSchool.getConnection();
-        const [listRegions] = await connection.raw(`
-            SELECT 
-                sr.*
-            FROM sys_regions AS sr
-            ORDER BY sr.region
-        `);
+        const listRegions = await connection('sys_regions as sr')
+        .select(
+            'sr.*'
+        )
+        orderBy('sr.region');
 
         result(null, listRegions)
     } catch (error) {
-        console.error('Error fetching users from tenant database', error);
         result(error, null);
     } finally {
         // Cierra la conexión después de realizar las operaciones
-        await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 
 utils.communityByRegions = async (id, result) => {
     try {
         const connection = await dbSchool.getConnection();
-        const [listRegions] = await connection.raw(`
-            SELECT 
-                sc.id,
-                sc.comuna,
-                sp.provincia,
-                sr.region
-            FROM sys_regions AS sr
-            JOIN sys_provinces sp ON sr.id = sp.region_id
-            JOIN sys_community sc ON sp.id = sc.provincia_id
-            WHERE sr.id = ${id}
-            ORDER BY sc.comuna
-        `);
+        const listRegions = await connection('sys_regions as sr')
+        .select(
+            'sc.id',
+            'sc.comuna',
+            'sp.provincia',
+            'sr.region'
+        )
+        .innerJoin('sys_provinces as sp', 'sr.id', 'sp.region_id')
+        .innerJoin('sys_community as sc', 'sp.id', 'sc.provincia_id')
+        .where('sr.id', id)
+        orderBy('sc.comuna');
 
         result(null, listRegions)
     } catch (error) {
-        console.error('Error fetching users from tenant database', error);
         result(error, null);
     } finally {
         // Cierra la conexión después de realizar las operaciones
-        await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 
 utils.getCountries = async (result) => {
     try {
         const connection = await dbSchool.getConnection();
-        const [listRegions] = await connection.raw(`
-            SELECT 
-                sc.*
-            FROM sys_countries AS sc
-            ORDER BY sc.name
-        `);
+        const listCountries = await connection('sys_countries as sc')
+        .select('sc.*')
+        .orderBy('sc.name');
 
-        result(null, listRegions)
+        result(null, listCountries)
     } catch (error) {
-        console.error('Error fetching users from tenant database', error);
         result(error, null);
     } finally {
         // Cierra la conexión después de realizar las operaciones
-        await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 
