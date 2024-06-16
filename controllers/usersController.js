@@ -3,7 +3,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Rol = require('../models/rol');
-const User = require('../models/user');
+const User = require('../models/user_old');
 const keys = require('../config/keys');
 
 module.exports = {

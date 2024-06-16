@@ -31,11 +31,14 @@ const HOST = process.env.HOST;
 * MIDDLEWARE IDENTIFY TENANT
 */
 const tenantMiddleware = require('./middleware/tenantMiddleware');
-app.use(tenantMiddleware);
+//app.use(tenantMiddleware);
 
 // MIDDLEWARE CONECTION TO DATA BASE SCHOOL
 const schoolMiddleware = require('./middleware/schoolMiddleware');
-app.use(schoolMiddleware);
+//app.use(schoolMiddleware);
+
+const {getTenantDatabaseConnection} = require('./middleware/tenantDbMiddleware');
+app.use(getTenantDatabaseConnection);
 
 // Use cors middleware with the desired options
 app.use(cors({
