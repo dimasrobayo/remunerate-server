@@ -4,6 +4,7 @@ const Course = require('../models/Course');
 const moment = require('moment')
 
 
+
 /**
  * Controller function to handle index route.
  * 
@@ -33,18 +34,28 @@ const index = async (request, response) => {
  * @returns {Promise<void>} Promise indicating the completion of the function.
  */
 const create = async (request, response) => {
+
     try {
         const data = request.body 
         const courses = await Course.create(data);
         return response.status(201).json({
             success: true,
             message: 'Listado de cursos.',
-            data: courses // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
+            data: courses
         })
-    } catch (error) {
-        console.error(error);
-        response.status(501).send('Error en el servidor.');
-    }
+      } catch (error) {
+        if (error.type == 'ModelValidation') {
+          return response.status(error.statusCode).json({
+            success: error.status,
+            message: error.type,
+            errors: error.data
+          })
+        } else {
+          console.error('Unexpected error:', error);
+          response.status(501).send('Error en el servidor.');
+        }
+      }
+    
 };
 
 /**

@@ -1,4 +1,5 @@
 const { Model } = require('objection');
+const validate = require('validate.js');
 
 class BaseModel extends Model {
   
@@ -80,6 +81,11 @@ class BaseModel extends Model {
    */
   static async findOneByCondition(condition) {
     return this.query().findOne(condition);
+  }
+
+  _validation(attributes,constraints) {
+    // Simulación de lógica de validación
+    return validate(attributes, constraints);;
   }
 }
 
