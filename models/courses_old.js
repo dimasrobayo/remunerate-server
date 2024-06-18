@@ -1,23 +1,22 @@
 const dbSchool = require('../db');
-const grades = {};
+const courses = {};
 
-grades.getGrades = async (result) => {
+courses.getCourses = async (result) => {
     try {
         const connection = await dbSchool.getConnection();
-
-        const listGrades = await connection('sys_grades as g')
+        const listCourse = await connection('sys_courses as sc')
         .select(
-            'tt.id AS id_type_teaching',
-            'tt.codigo AS code_type_teaching',
-            'tt.name as name_type_teaching',
-            'g.*'
+            'sg.id as id_grade',
+            'sg.code_grade',
+            'sg.name as name_grade',
+            'sc.*'
         )
-        .innerJoin('sys_types_teachings as tt', 'tt.id', 'g.sys_type_teaching_id')
-        .where('tt.status', 'ACTIVO')
-        .whereNull('g.deleted_at')
-        .orderBy('g.id');
+        .innerJoin('sys_grades as sg', 'sg.id', 'sc.sys_grade_id')
+        .whereNull('sc.deleted_at')
+        .whereNull('sg.deleted_at')
+        .orderBy('sc.id');
 
-        result(null, listGrades)
+        result(null, listCourse)
     } catch (error) {
         result(error, null);
     }
@@ -27,43 +26,45 @@ grades.getGrades = async (result) => {
     }
 }
 
-grades.create = async (grade, result) => {
+courses.create = async (course, result) => {
     try {
         const connection = await dbSchool.getConnection();
-        const { code_grade, name, sys_type_teaching_id } = grade;
+        const { name, code_course, sys_grade_id } = course;
 
-        const [createGrade] = await connection('sys_grades')
+        const createCourse = await connection('sys_courses')
         .insert({
-            code_grade: code_grade,
             name: name,
-            sys_type_teaching_id: sys_type_teaching_id
+            code_course: code_course,
+            sys_grade_id: sys_grade_id
         })
 
-        result(null, createGrade[0]);
+        result(null, createCourse[0]);
     } catch (error) {
+        console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
+        console.log('Cierra la conexión después de Courses create')
         dbSchool.closeConnection();
     }
 }
 
-grades.update = async (grade, result) => {
+courses.update = async (course, result) => {
     try {
         const connection = await dbSchool.getConnection();
-        const { id, code_grade, name, sys_type_teaching_id } = grade;
+        const { id, code_course, name, sys_grade_id } = course;
 
-        const updateGrade = await connection('sys_grades')
+        const updateCourse = await connection('sys_courses')
         .where('id', id)
         .update({
-            code_grade: code_grade,
+            code_course: code_course,
             name: name,
-            sys_type_teaching_id: sys_type_teaching_id,
+            sys_grade_id: sys_grade_id,
             updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
         })
 
-        result(null, updateGrade[0]);
+        result(null, updateCourse.insertId);
     } catch (error) {
         result(error, null);
     }
@@ -73,10 +74,10 @@ grades.update = async (grade, result) => {
     }
 }
 
-grades.delete = async (id, result) => {
+courses.delete = async (id, result) => {
     try {
         const connection = await dbSchool.getConnection();
-        const deleteGrade = await connection('sys_grades')
+        const deleteGrade = await connection('sys_courses')
         .where('id', id)
         .update({
             deleted_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
@@ -92,4 +93,4 @@ grades.delete = async (id, result) => {
     }
 }
 
-module.exports = grades;
+module.exports = courses;

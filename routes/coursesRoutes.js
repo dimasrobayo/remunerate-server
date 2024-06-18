@@ -9,6 +9,6 @@ module.exports = (app, upload) => {
 
     app.get('/api/courses', passport.authenticate('jwt', {session: false}), coursesController.index);
     app.post('/api/courses/create', passport.authenticate('jwt', {session: false}), coursesController.create);
-    app.put('/api/courses/update', passport.authenticate('jwt', {session: false}), coursesController.update);
-    app.delete('/api/courses/delete/:id', passport.authenticate('jwt', {session: false}), coursesController.delete);
+    app.put('/api/courses/update/:id', passport.authenticate('jwt', {session: false}), coursesController.update);
+    app.delete('/api/courses/delete/:id', passport.authenticate('jwt', {session: false}), coursesController.deleted);
 }

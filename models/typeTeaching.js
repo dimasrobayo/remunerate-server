@@ -2,43 +2,34 @@ const dbSchool = require('../db');
 const typesTeaching = {};
 
 typesTeaching.getTypeTeaching = async (result) => {
-    const connection = await dbSchool.getConnection();
-    
     try {
-        const [listTypeTeaching] = await connection.raw(`
-            SELECT 
-                *
-            FROM sys_types_teachings AS tt
-            ORDER BY tt.id
-        `);
+        const connection = await dbSchool.getConnection();
+        const listTypeTeaching =  await connection('sys_types_teachings as stt')
+            .select('stt.*')
+            .orderBy('stt.codigo');
 
         result(null, listTypeTeaching)
     } catch (error) {
-        console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        //console.log('Cierra la conexión después de getTypeTeaching')
-        //await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 
 typesTeaching.create = async (type, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
-        const [createTypeTeaching] = await connection.raw(`
-            INSERT INTO sys_types_teachings(
-                codigo,
-                name
-            )VALUES(
-                '${type.codigo.trim()}',
-                '${type.name.trim().toUpperCase()}'
-            )
-        `)
+        const connection = await dbSchool.getConnection();
+        const { codigo, name } = type
 
-        result(null, createTypeTeaching.insertId);
+        const createTypeTeaching = await connection('sys_types_teachings')
+        .insert({
+            codigo: codigo,
+            name: name
+        })
+
+        result(null, createTypeTeaching[0]);
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
         result(error, null);
@@ -51,52 +42,43 @@ typesTeaching.create = async (type, result) => {
 }
 
 typesTeaching.edit = async (id, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
-        const [editTypeTeaching] = await connection.raw(`
-            SELECT 
-                *
-            FROM sys_types_teachings AS tt
-            WHERE
-                tt.id = ${id}
-            ORDER BY tt.id
-        `)
-        result(null, editTypeTeaching[0]);
+        const connection = await dbSchool.getConnection();
+
+        const editTypeTeaching = await connection('sys_types_teachings as stt')
+            .select('stt.*')
+            .where('stt.id', id)
+            .orderBy('stt.codigo');
+
+        result(null, editTypeTeaching);
     } catch (error) {
-        console.error('Error fetching typesTeaching from tenant database', error);
         result(error, null);
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        //console.log('Cierra la conexión después de Teaching edit')
-        //await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 
 typesTeaching.update = async (type, result) => {
-    const connection = await dbSchool.getConnection();
-
     try {
-        const [updateTypeTeaching] = await connection.raw(`
-            UPDATE sys_types_teachings
-            SET
-                codigo  = '${type.codigo}',
-                name = '${type.name}',
-                updated_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
-            WHERE
-                id = ${type.id}
-        `)
+        const connection = await dbSchool.getConnection();
+        const { id, codigo, name } = type;
 
-        result(null, updateTypeTeaching.insertId);
+        const updateTypeTeaching = await connection('sys_types_teachings')
+            .where('id', id)
+            .update({
+                codigo: codigo,
+                name: name,
+                updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
+            })
+        result(null, updateTypeTeaching[0]);
     } catch (error) {
-        console.error('Error fetching users from tenant database', error);
         result(error, null);
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        //console.log('Cierra la conexión después de Teaching update')
-        //await dbSchool.closeConnection();
+        dbSchool.closeConnection();
     }
 }
 
@@ -104,9 +86,10 @@ typesTeaching.delete = async (id, result) => {
     const connection = await dbSchool.getConnection();
 
     try {
-        const [editTypeTeaching] = await connection.raw(`
-            DELETE FROM sys_types_teachings WHERE id = ${id}
-        `)
+        const deleteTypeTeaching = await connection('sys_types_teachings')
+        .where('id', id)
+        .del();
+
         result(null, id);
     } catch (error) {
         console.error('Error fetching typesTeaching from tenant database', error);
