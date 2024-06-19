@@ -4,264 +4,305 @@ const moment = require('moment');
 const validateData = require('../constraints/matricula/rules');
 const dbSchool = require('../db');
 
-const courses = require('../models/courses');
-const sysMatricula = require('../models/sysMatricula');
-const userPersonalInfo = require('../models/userPersonalInfo');
-const userCivilianInfo = require('../models/userCivilianInfo');
-const userSocialInfo = require('../models/userSocialInformation');
-const userAddresses = require('../models/userAddresses');
-const userAddressesPersonalInfo = require('../models/userAddressesPersonalInfo');
-const sysSchoolPeriod = require('../models/sysSchoolPeriod');
-const sysMatriculaModality = require('../models/sysMatriculaModality');
-const sysCommunity = require('../models/sysCommunity');
-const sysMatriculaObservation= require('../models/sysMatriculaObservation')
+const courses = require('../models/Course');
+const Matricula = require('../models/Matricula');
+const UserPersonalInfo = require('../models/UserPersonalInfo');
+const UserCivilianInfo = require('../models/UserCivilianInfo');
+const UserSocialInfo = require('../models/UserSocialInfo');
+const UserAddress = require('../models/UserAddress');
+const UserAddressPersonalInfo = require('../models/UserAddressPersonalInfo');
+const SchoolPeriod = require('../models/SchoolPeriod');
+const MatriculaModality = require('../models/MatriculaModality');
+const Community = require('../models/Community');
+const MatriculaObservation = require('../models/MatriculaObservation')
 
+
+
+/**
+ * Controller function to handle index route.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const index = async (request, response) => {
+    try {
+        const matricula = await Matricula.get({});
+        return response.status(201).json({
+            success: true,
+            message: 'Listado de cursos.',
+            data: matricula // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
+        })
+    } catch (error) {
+        console.error(error);
+        response.status(501).send('Error en el servidor.');
+    }
+};
+
+/**
+ * Controller function to handle create route.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const create = async (request, response) => {
+
+    try {
+        const obj = request.body;
+        // get the user who upload file by jwt
+        const user = request.user
+        // copy obj to toLowerCase
+        let student = {
+            ...obj,
+            name: obj.name.toLowerCase(),
+            lastname: obj.lastname.toLowerCase(),
+            mother_lastname: obj.mother_lastname.toLowerCase(),
+            birthdate: changeDateFormat(obj.date_birth),
+            phone: obj.phone,
+            phone_aux: obj.phone_aux,
+            email: obj.email.toLowerCase(),
+            country_birth: '',
+            nationality: '',
+            observaciones: '',
+            codigo_postal: null,
+            department_number: 'No especificado',
+            cod_modality: '0001'
+        };
+
+        
+        // get computed values db
+        const course = await courses.getCoursesByCodeGradeAndCourseName(
+            {
+                letter_course: student.letter_course,
+                code_grade: student.cod_grade,
+                cod_type_teacher: student.cod_type_teacher
+            },
+        );
+        // add school period
+        const sysSchool = await SchoolPeriod.findOneByCondition({ id: student.sys_school_id });
+        
+        // add matricula modality
+        const matriculaModal = await MatriculaModality.findOneByCondition({ id: student.cod_modality_id });
+        // check by address fields array with sys_comunity
+        for (let index = 0; index < student.address.length; index++) {
+            const address = student.address[index];
+            let comunity = await Community.findOneByCondition({ id: address.sys_community_id });
+            if (comunity === undefined) {
+                student.address.splice(index, 1);
+            }
+        }
+        student = { ...student, course, sysSchool, matriculaModal };
+        
+
+        // validate students data rules
+        const studentsValidate = validateData(student, 'create');
+        
+        // check if any error
+        if (studentsValidate) {
+            try {
+                const personalInfo = await UserPersonalInfo.transaction(async trx => {
+                    // check if personalInfo by document number
+                    const personal_info = await UserPersonalInfo.findOneByCondition(
+                        {
+                            document_number: student.document_number
+                        }
+                    );
+                    if (personal_info === undefined) {
+                        // Here you can use the transaction.
+                        let personalInfo = {
+                            'name': student.name,
+                            'lastname': student.lastname,
+                            'mother_lastname': student.mother_lastname,
+                            'type_document': student.type_document,
+                            'document_number': student.document_number,
+                            'gender': student.gender,
+                            'phone': student.gender,
+                            'image': null,
+                        }
+                        return await UserPersonalInfo.query(trx).insert(personalInfo);
+                    }
+                    return personal_info;
+                });
+                student.personal_info = personalInfo;
+                // Here the transaction has been committed.
+            } catch (error) {
+                // Here the transaction has been rolled back.
+                console.error(error);
+                console.error('Error en la transacción: UserPersonalInfo', error.message);
+            }
+
+            
+            // save address
+            try {
+                const addressModels = await UserAddress.transaction(async trx => {
+                    let userAddressIds = [];
+                    for (let index = 0; index < student.address.length; index++) {
+                        const addressModel =  await UserAddress.query(trx).insert(student.address[index]);
+                        await UserAddressPersonalInfo.query(trx).insert({
+                            address_id: addressModel.id,
+                            user_personal_info_id: student.personal_info.id
+                        })
+                        userAddressIds.push({address: addressModel});
+                    }
+                    
+                    return userAddressIds
+                });
+                //console.log(JSON.stringify(addressIds, null, 2));
+                student.address = addressModels;
+                // Here the transaction has been committed.
+            } catch (error) {
+                // Here the transaction has been rolled back.
+                console.error(error);
+                console.error('Error en la transacción: address', error.message);
+            }
+            // save userCivilianInfo
+            try {
+                const civilianInfo = await UserCivilianInfo.transaction(async trx => {
+                    let ifstudentsCivilian = await UserCivilianInfo.findOneByCondition({
+                        user_personal_info_id: student.personal_info.id
+                    })
+                    if (ifstudentsCivilian == undefined) {
+                        let civilian = {
+                            user_personal_info_id: student.personal_info.id,
+                            birthdate: student.birthdate,
+                            country_birth: student.country_birth,
+                            nationality: student.nationality,
+                            observaciones: student.observaciones
+                        }
+                        return await UserCivilianInfo.query(trx).insert(civilian)
+                    }
+                    
+                    return ifstudentsCivilian
+                });
+                console.log(JSON.stringify(civilianInfo, null, 2));
+                student.civilianInfo = civilianInfo;
+                // Here the transaction has been committed.
+            } catch (error) {
+                // Here the transaction has been rolled back.
+                console.error(error);
+                console.error('Error en la transacción: UserCivilianInfo', error.message);
+            }
+
+           
+
+            // save UserSocialInfo
+            try {
+                const socialInfo = await UserSocialInfo.transaction(async trx => {
+                    let ifstudentsSocial = await UserSocialInfo.findOneByCondition({
+                        user_personal_info_id: student.personal_info.id
+                    })
+                    if (ifstudentsSocial == undefined) {
+                        let social = {
+                            user_personal_info_id: student.personal_info.id,
+                            email: student.email,
+                            phone: student.phone
+                        }
+                        return await UserSocialInfo.query(trx).insert(social)
+                    }
+                    
+                    return ifstudentsSocial
+                });
+                student.socialInfo = socialInfo;
+                // Here the transaction has been committed.
+            } catch (error) {
+                // Here the transaction has been rolled back.
+                console.error(error);
+                console.error('Error en la transacción: UserCivilianInfo', error.message);
+            }
+
+            // save matricula
+            try {
+                const sys_matricula = await Matricula.transaction(async trx => {
+                    let sys_courses_id = student.course[0].curso_id;
+                    let cod_matricula = `${student.document_number}_${sys_courses_id}_${student.sysSchool.año_escolar}`;
+                    
+                    let ifMatriculaExits = await Matricula.findOneByCondition({ cod_matricula: cod_matricula });
+
+                    if (ifMatriculaExits === undefined) {
+                        let create_date = moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS');
+                        let date_matricula = moment().format('YYYY-MM-DD');
+                        let create_by = user.id;
+
+                        const matricula = {
+                            "cod_matricula": cod_matricula,
+                            "date_matricula": date_matricula,
+                            "create_at": create_date,
+                            "create_by": create_by,
+                            "user_personal_info_id": student.personal_info.id,
+                            "sys_courses_id": sys_courses_id,
+                            "sys_school_period_id": student.sysSchool.id,
+                            "sys_matricula_modality_id": student.matriculaModal.id
+                        }
+
+                        return await Matricula.query(trx).insert(matricula);
+                    }
+
+                    return ifMatriculaExits;
+                });
+                student.sys_matricula_id = sys_matricula.id;
+                // Here the transaction has been committed.
+            } catch (error) {
+                // Here the transaction has been rolled back.
+                console.error(error);
+                console.error('Error en la transacción: Matricula', error.message);
+            }
+
+            // save MatriculaObservation
+            try {
+                const sys_matricula_observation = await MatriculaObservation.transaction(async trx => {
+                    let ifObservation = await MatriculaObservation.findOneByCondition({
+                        name: student.observation.name, 
+                        sys_matriculas_id: student.sys_matricula_id
+                    })
+                    if (ifObservation == undefined) {
+                        let observation = {
+                            "type_observation": student.observation.type,
+                            "date_observation": moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
+                            "description": student.observation.description,
+                            "name": student.observation.name,
+                            "sys_matriculas_id": student.sys_matricula_id
+                        }
+                        return await MatriculaObservation.query(trx).insert(observation)
+                    }
+                    
+                    return ifObservation
+                });
+                student.sys_matricula_observation_id = sys_matricula_observation.id;
+                // Here the transaction has been committed.
+            } catch (error) {
+                // Here the transaction has been rolled back.
+                console.error(error);
+                console.error('Error en la transacción: MatriculaObservation', error.message);
+            }
+
+        }
+
+        return response.status(201).json({
+            success: true,
+            message: 'Matricula registrada con exito',
+            data: student,
+            studentsValidate
+        })
+    } catch (error) {
+        if (error.type == 'ModelValidation') {
+            return response.status(error.statusCode).json({
+                success: error.status,
+                message: error.type,
+                errors: error.data
+            })
+        } else {
+            console.error('Unexpected error:', error);
+            response.status(501).send('Error en el servidor.');
+        }
+    }
+
+};
 
 
 module.exports = {
-    async index(request, response) {
-        
-        try {
-            const connection = await dbSchool.getConnection();
-
-            const matriculas = await sysMatricula.get({},connection);
-            return response.status(201).json({
-                success: true,
-                message: 'Listado de matriculas.',
-                data: matriculas
-            })
-            
-        } catch (error) {
-            console.log(error);
-            return response.status(201).json({
-                success: false,
-                message: error,
-            })
-        }finally{
-            // Cierra la conexión después de realizar las operaciones
-            console.log('closed conection....')
-            await dbSchool.closeConnection();
-        }
-
-        
-    },
-    async create(request, response) {
-        try {
-            const obj = request.body;
-            const connection = await dbSchool.getConnection();
-            // get the user who upload file by jwt
-            const user = request.user
-            // copy obj to toLowerCase
-            let student = {
-                ...obj,
-                name: obj.name.toLowerCase(),
-                lastname: obj.lastname.toLowerCase(),
-                mother_lastname: obj.mother_lastname.toLowerCase(),
-                birthdate: changeDateFormat(obj.date_birth),
-                phone: obj.phone,
-                phone_aux: obj.phone_aux,
-                email: obj.email.toLowerCase(),
-                country_birth: '',
-                nationality: '',
-                observaciones: '',
-                codigo_postal: null,
-                department_number: 'No especificado',
-                cod_modality: '0001'
-            };
-
-            // get computed values db
-            const course = await courses.getCoursesByCodeGradeAndCourseName(
-                { 
-                letter_course: student.letter_course, 
-                code_grade: student.cod_grade,
-                cod_type_teacher:student.cod_type_teacher 
-                },
-                connection
-            );
-            // add school period
-            const sysSchool = await sysSchoolPeriod.getSchoolPeriodsByparams({id:student.sys_school_id},connection);
-            // add matricula modality
-            const matriculaModal = await sysMatriculaModality.getMatriculaModalityByparams({id:student.cod_modality_id},connection);
-            // check by address fields array with sys_comunity
-            for (let index = 0; index < student.address.length; index++) {
-                const address = student.address[index];
-                let comunity = await sysCommunity.getCommunityByparams({id:address.sys_community_id},connection);
-                if(comunity) {
-                    student.address[index].provincia_id = comunity.provincia_id; 
-                }else{
-                    student.address.splice(index, 1);
-                }
-            }
-            student = { ...student, course, sysSchool, matriculaModal};
-            
-
-            // validate students data rules
-            const studentsValidate = validateData(student,'create');
-
-            // check if any error
-            if (studentsValidate) {
-                // save userPersonalInfo
-                await connection.transaction(async (transaction) => {
-                    try {
-                        const userPersonalInfoId = await userPersonalInfo.create(student, transaction);
-                        student.user_personal_info_id = userPersonalInfoId;
-                        await transaction.commit();
-                    } catch (error) {
-                        console.log('Error in userPersonalInfo save: ' + error.message)
-                    }
-                });
-                // save address
-                await connection.transaction(async (transaction) => {
-                    for (let index = 0; index < student.address.length; index++) {
-                        const address = student.address[index];
-                        // check if provincia_id exits
-                        if (address.hasOwnProperty('provincia_id')) {
-                            try {
-                                const addressesID = await userAddresses.create(address, address.sys_community_id, transaction);
-                                await userAddressesPersonalInfo.create(
-                                    {
-                                        address_id: addressesID,
-                                        user_personal_info_id: student.user_personal_info_id
-                                    }, 
-                                    transaction  
-                                );
-                            } catch (error) {
-                                // Lanza el error para manejarlo en el catch exterior
-                                throw new Error('Error in address save: ' + error.message);
-                            }
-                            
-                        }
-                    }
-                });
-                
-
-                // save userCivilianInfo
-                await connection.transaction(async (transaction) => {
-                    try {
-
-                        // search for students first in civilian
-                        let ifstudentsCivilian = await userCivilianInfo.getBy({ user_personal_info_id: student.user_personal_info_id }, transaction)
-                        console.log(ifstudentsCivilian)
-                        if (ifstudentsCivilian === undefined) {
-                            let userCivilianInfoID = await userCivilianInfo.create(student, student.user_personal_info_id, transaction);
-                            console.log('userCivilianInfo ID: ' + userCivilianInfoID);
-                        }
-                        await transaction.commit();
-
-                    } catch (error) {
-                        await transaction.rollback();
-                        console.log('Error in civilian save: ' + error.message)
-                    }
-                })
-
-                // save userSocialInfo
-                await connection.transaction(async (transaction) => {
-                    try {
-                        // search for students first in civilian
-                        let ifstudentsCivilian = await userSocialInfo.getByUserPersonalinfoId(student.user_personal_info_id, transaction)
-                        console.log(ifstudentsCivilian)
-                        if (ifstudentsCivilian === undefined) {
-                            let userSocialInfoID = await userSocialInfo.create(student, student.user_personal_info_id, transaction);
-                            console.log('userSocialInfo ID: ' + userSocialInfoID);
-                        }
-                        await transaction.commit();
-
-                    } catch (error) {
-                        await transaction.rollback();
-                        console.log('Error in civilian save: ' + error.message)
-                    }
-                })
-
-                // save matricula
-                await connection.transaction(async (transaction) => {
-                    try {
-
-                        // search by cod_matricula
-                        let sys_courses_id = student.course[0].curso_id;
-                        let cod_matricula = `${student.document_number}_${sys_courses_id}_${student.sysSchool.año_escolar}`;
-
-                        let ifMatriculaExits = await sysMatricula.get({ cod_matricula: cod_matricula },transaction);
-                        console.log("------------------->")
-                        console.log(ifMatriculaExits);
-                        if (!ifMatriculaExits.length) {
-                            // add date create_at update_at
-                            let create_date = moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS');
-                            let date_matricula = moment().format('YYYY-MM-DD');
-                            let create_by = user.id;
-
-                            const matricula = {
-                                "cod_matricula": cod_matricula,
-                                "date_matricula": date_matricula,
-                                "create_at": create_date,
-                                "create_by": create_by,
-                                "user_personal_info_id": student.user_personal_info_id,
-                                "sys_courses_id": sys_courses_id,
-                                "sys_school_period_id": student.sysSchool.id,
-                                "sys_matricula_modality_id": student.matriculaModal.id
-                            }
-
-                            const matriculaID = await sysMatricula.create(matricula, transaction);
-                            student.sys_matricula_id = matriculaID;
-                        } else {
-                            student.sys_matricula_id = ifMatriculaExits.id;
-                        }
-                        await transaction.commit();
-
-                    } catch (error) {
-                        await transaction.rollback();
-                        console.log('Error in matricula save: ' + error.message)
-                    }
-                })
-
-                // save matricula observation
-                await connection.transaction(async (transaction) => {
-                    try {
-        
-                        if (student.sys_matricula_id) {
-                            // search observation by code_checker -> file name upload
-                            let ifObservable = await sysMatriculaObservation.get({name: student.observation.name,sys_matriculas_id:student.sys_matricula_id},transaction)
-                            if (ifObservable == undefined) {
-                                const matriculaObservation = {
-                                "type_observation": student.observation.type,
-                                "date_observation": moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS'),
-                                "description": student.observation.description,
-                                "name": student.observation.name,
-                                "sys_matriculas_id": student.sys_matricula_id
-                                }
-                                await sysMatriculaObservation.create(matriculaObservation,transaction);
-                                
-                            }
-                        }
-                    
-                    } catch (error) {
-                        await transaction.rollback();
-                        console.log('Error in matricula observation ',error)
-                    }
-                });
-
-            }
-
-            return response.status(201).json({
-                success: true,
-                message: 'Matricula registrada con exito',
-                data: student,
-                studentsValidate
-            })
-
-        } catch ({ name, message }) {
-            console.log(name); // "TypeError"
-            console.log(message); 
-            return response.status(201).json({
-                success: false,
-                message: message,
-            })
-        } finally {
-            // Cierra la conexión después de realizar las operaciones
-            console.log('closed conection....')
-            await dbSchool.closeConnection();
-        }
-
-    },
+    index,
+    create,
     async update(request, response) {
         return response.status(201).json({
             success: true,
@@ -274,11 +315,11 @@ module.exports = {
         const connection = await dbSchool.getConnection();
 
         try {
-            const matriculas = await sysMatricula.get({id: id},connection);
+            const matriculas = await sysMatricula.get({ id: id }, connection);
             console.log(matriculas.length)
             if (matriculas.length > 0) {
-                await sysMatricula.update(id,{'deleted_at': new Date()},connection)
-                
+                await sysMatricula.update(id, { 'deleted_at': new Date() }, connection)
+
             }
 
 
@@ -288,23 +329,23 @@ module.exports = {
                 message: 'Matricula eliminada con exito',
                 //data: matriculas
             })
-            
+
         } catch ({ name, message }) {
             console.log(name); // "TypeError"
-            console.log(message); 
+            console.log(message);
 
             return response.status(201).json({
                 success: false,
                 message: message,
             })
-            
-        }finally {
+
+        } finally {
             // Cierra la conexión después de realizar las operaciones
             console.log('closed conection....')
             await dbSchool.closeConnection();
 
         }
-        
+
     }
 }
 

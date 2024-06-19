@@ -31,11 +31,11 @@ const HOST = process.env.HOST;
 /*
 * MIDDLEWARE IDENTIFY TENANT
 */
-const tenantMiddleware = require('./middleware/tenantMiddleware');
+//const tenantMiddleware = require('./middleware/tenantMiddleware');
 //app.use(tenantMiddleware);
 
 // MIDDLEWARE CONECTION TO DATA BASE SCHOOL
-const schoolMiddleware = require('./middleware/schoolMiddleware');
+//const schoolMiddleware = require('./middleware/schoolMiddleware');
 //app.use(schoolMiddleware);
 
 const {getTenantDatabaseConnection} = require('./middleware/tenantDbMiddleware');
@@ -78,6 +78,7 @@ subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
 teachersRoutes(app, upload);
+matriculaUploadRoutes(app, upload);
 utilsRoutes(app);
 
 app.get('/', (request, response) => {

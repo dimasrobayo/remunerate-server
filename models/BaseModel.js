@@ -83,7 +83,7 @@ class BaseModel extends Model {
     return this.query().findOne(condition);
   }
 
-  _validation(attributes,constraints) {
+  validation(attributes,constraints) {
     // Simulación de lógica de validación
     return validate(attributes, constraints);;
   }

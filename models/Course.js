@@ -66,6 +66,25 @@ class Course extends BaseModel {
       .orderBy(`${alias}.id`);
   }
 
+  static async  getCoursesByCodeGradeAndCourseName(attributes){
+    return this.query()
+    .select(
+      'sg.id as grade_id',
+      'sg.code_grade',
+      'sg.name as grade_name',
+      'sys_courses.id as curso_id',
+      'sys_courses.name',
+      'sys_courses.code_course'
+    )
+    .from('sys_grades as sg')
+    .innerJoin('sys_courses', 'sg.id', 'sys_courses.sys_grade_id')
+    .innerJoin('sys_types_teachings', 'sg.sys_type_teaching_id', 'sys_types_teachings.id')
+    .where('sg.code_grade', attributes.code_grade)
+    .andWhere('sys_courses.letter_course', 'like', `${attributes.letter_course}%`)
+    .andWhere('sys_types_teachings.codigo', attributes.cod_type_teacher)
+    .orderBy(['sg.code_grade', 'sys_courses.name']);;
+  }
+
   /**
    * [optional]
    * Retrieves constraints AKA rules for validation wiht validate methods.
@@ -106,7 +125,7 @@ class Course extends BaseModel {
    */
   $validate(attributes) {
     // Run validation using validate.js and model constraints
-    const validationErrors = this._validation(attributes, this.constructor.constraints);
+    const validationErrors = this.validation(attributes, this.constructor.constraints);
 
     // If there are validation errors, throw a ValidationError error
     if (validationErrors) {
