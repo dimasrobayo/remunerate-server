@@ -95,7 +95,7 @@ const deleted = async (request, response) => {
         const course = await Course.updateById(id,{deleted_at: deleted_at});
         return response.status(201).json({
             success: true,
-            message: 'Listado de cursos.',
+            message: 'Eliminado de cursos.',
             data: course // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
         })
     } catch (error) {

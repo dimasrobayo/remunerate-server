@@ -23,5 +23,5 @@ module.exports = (app, upload) => {
     //app.post('/api/teachers/upload', passport.authenticate('jwt', {session: false}),fileUploadController.upload);
     app.post('/api/teachers/migrate/upload',passport.authenticate('jwt', {session: false}), upload.single('file'), fileUploadController.upload);
     app.post('/api/teachers/migrate/:id', passport.authenticate('jwt', {session: false}), fileUploadController.migrate);
-    app.delete('/api/teachers/destroy/:id',  fileUploadController.delete);
+    app.delete('/api/teachers/destroy/:id',  fileUploadController.delete_at);
 }

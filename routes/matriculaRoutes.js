@@ -10,7 +10,7 @@ module.exports = (app, upload) => {
     // PUT -> ACTUALIZAR DATOS
     app.put('/api/matricula/update/:id', passport.authenticate('jwt', {session: false}), matriculaController.update);
     // DELETE -> ELIMINAR DATOS
-    app.delete('/api/matricula/delete/:id', passport.authenticate('jwt', {session: false}), matriculaController.delete)
+    app.delete('/api/matricula/delete/:id', passport.authenticate('jwt', {session: false}), matriculaController.delete_at)
     app.post('/api/matricula/migrate/upload',passport.authenticate('jwt', {session: false}), upload.single('file'), matriculafileUploadController.upload);
     app.post('/api/matricula/migrate/:id', passport.authenticate('jwt', {session: false}), matriculafileUploadController.migrate);
     app.delete('/api/matricula/destroy/:id',  matriculafileUploadController.delete);

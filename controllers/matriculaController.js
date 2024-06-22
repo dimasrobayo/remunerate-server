@@ -2,7 +2,7 @@ const _ = require('lodash');
 const moment = require('moment');
 
 const validateData = require('../constraints/matricula/rules');
-const dbSchool = require('../db');
+
 
 const courses = require('../models/Course');
 const Matricula = require('../models/Matricula');
@@ -31,7 +31,7 @@ const index = async (request, response) => {
         return response.status(201).json({
             success: true,
             message: 'Listado de cursos.',
-            data: matricula // EL ID DEL NUEVO USUARIO QUE SE REGISTRO
+            data: matricula 
         })
     } catch (error) {
         console.error(error);
@@ -58,7 +58,7 @@ const create = async (request, response) => {
             name: obj.name.toLowerCase(),
             lastname: obj.lastname.toLowerCase(),
             mother_lastname: obj.mother_lastname.toLowerCase(),
-            birthdate: changeDateFormat(obj.date_birth),
+            birthdate: moment(obj.date_birth, 'MM/DD/YYYY').format('MM-DD-YYYY'),
             phone: obj.phone,
             phone_aux: obj.phone_aux,
             email: obj.email.toLowerCase(),
@@ -69,8 +69,6 @@ const create = async (request, response) => {
             department_number: 'No especificado',
             cod_modality: '0001'
         };
-
-        
         // get computed values db
         const course = await courses.getCoursesByCodeGradeAndCourseName(
             {
@@ -81,7 +79,6 @@ const create = async (request, response) => {
         );
         // add school period
         const sysSchool = await SchoolPeriod.findOneByCondition({ id: student.sys_school_id });
-        
         // add matricula modality
         const matriculaModal = await MatriculaModality.findOneByCondition({ id: student.cod_modality_id });
         // check by address fields array with sys_comunity
@@ -92,12 +89,12 @@ const create = async (request, response) => {
                 student.address.splice(index, 1);
             }
         }
+
         student = { ...student, course, sysSchool, matriculaModal };
-        
 
         // validate students data rules
         const studentsValidate = validateData(student, 'create');
-        
+
         // check if any error
         if (studentsValidate) {
             try {
@@ -132,23 +129,23 @@ const create = async (request, response) => {
                 console.error('Error en la transacción: UserPersonalInfo', error.message);
             }
 
-            
+
             // save address
             try {
                 const addressModels = await UserAddress.transaction(async trx => {
                     let userAddressIds = [];
                     for (let index = 0; index < student.address.length; index++) {
-                        const addressModel =  await UserAddress.query(trx).insert(student.address[index]);
+                        const addressModel = await UserAddress.query(trx).insert(student.address[index]);
                         await UserAddressPersonalInfo.query(trx).insert({
                             address_id: addressModel.id,
                             user_personal_info_id: student.personal_info.id
                         })
-                        userAddressIds.push({address: addressModel});
+                        userAddressIds.push({ address: addressModel });
                     }
-                    
+
                     return userAddressIds
                 });
-                //console.log(JSON.stringify(addressIds, null, 2));
+
                 student.address = addressModels;
                 // Here the transaction has been committed.
             } catch (error) {
@@ -172,7 +169,7 @@ const create = async (request, response) => {
                         }
                         return await UserCivilianInfo.query(trx).insert(civilian)
                     }
-                    
+
                     return ifstudentsCivilian
                 });
                 console.log(JSON.stringify(civilianInfo, null, 2));
@@ -183,9 +180,6 @@ const create = async (request, response) => {
                 console.error(error);
                 console.error('Error en la transacción: UserCivilianInfo', error.message);
             }
-
-           
-
             // save UserSocialInfo
             try {
                 const socialInfo = await UserSocialInfo.transaction(async trx => {
@@ -200,7 +194,7 @@ const create = async (request, response) => {
                         }
                         return await UserSocialInfo.query(trx).insert(social)
                     }
-                    
+
                     return ifstudentsSocial
                 });
                 student.socialInfo = socialInfo;
@@ -210,14 +204,15 @@ const create = async (request, response) => {
                 console.error(error);
                 console.error('Error en la transacción: UserCivilianInfo', error.message);
             }
-
             // save matricula
             try {
                 const sys_matricula = await Matricula.transaction(async trx => {
                     let sys_courses_id = student.course[0].curso_id;
                     let cod_matricula = `${student.document_number}_${sys_courses_id}_${student.sysSchool.año_escolar}`;
-                    
-                    let ifMatriculaExits = await Matricula.findOneByCondition({ cod_matricula: cod_matricula });
+
+                    let ifMatriculaExits = await Matricula.findOneByCondition(
+                        { cod_matricula: cod_matricula,deleted_at:null }
+                    );
 
                     if (ifMatriculaExits === undefined) {
                         let create_date = moment().format('YYYY-MM-DD HH:mm:ss.SSSSSS');
@@ -247,12 +242,11 @@ const create = async (request, response) => {
                 console.error(error);
                 console.error('Error en la transacción: Matricula', error.message);
             }
-
             // save MatriculaObservation
             try {
                 const sys_matricula_observation = await MatriculaObservation.transaction(async trx => {
                     let ifObservation = await MatriculaObservation.findOneByCondition({
-                        name: student.observation.name, 
+                        name: student.observation.name,
                         sys_matriculas_id: student.sys_matricula_id
                     })
                     if (ifObservation == undefined) {
@@ -265,7 +259,7 @@ const create = async (request, response) => {
                         }
                         return await MatriculaObservation.query(trx).insert(observation)
                     }
-                    
+
                     return ifObservation
                 });
                 student.sys_matricula_observation_id = sys_matricula_observation.id;
@@ -299,62 +293,49 @@ const create = async (request, response) => {
 
 };
 
+/**
+ * Controller function to handle update route.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const update = async (request, response) => {
+    return response.status(201).json({
+        success: true,
+        message: 'Matricula actualizada con exito',
+        //data: data
+    })
+};
+
+
+/**
+ * Controller function to handle delete route.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const delete_at = async (request, response) => {
+    try {
+        const id = request.params.id;
+        const deleted_at = moment().format('YYYY-MM-DD HH:mm:ss');
+        const matricula = await Matricula.updateById(id,{deleted_at: deleted_at});
+        return response.status(201).json({
+            success: true,
+            message: 'Eliminada matricula.',
+            data: matricula 
+        })
+    } catch (error) {
+        console.error(error);
+        response.status(501).send('Error en el servidor.');
+    }
+};
 
 module.exports = {
     index,
     create,
-    async update(request, response) {
-        return response.status(201).json({
-            success: true,
-            message: 'Matricula actualizada con exito',
-            //data: data
-        })
-    },
-    async delete(request, response) {
-        const id = request.params.id;
-        const connection = await dbSchool.getConnection();
-
-        try {
-            const matriculas = await sysMatricula.get({ id: id }, connection);
-            console.log(matriculas.length)
-            if (matriculas.length > 0) {
-                await sysMatricula.update(id, { 'deleted_at': new Date() }, connection)
-
-            }
-
-
-
-            return response.status(201).json({
-                success: true,
-                message: 'Matricula eliminada con exito',
-                //data: matriculas
-            })
-
-        } catch ({ name, message }) {
-            console.log(name); // "TypeError"
-            console.log(message);
-
-            return response.status(201).json({
-                success: false,
-                message: message,
-            })
-
-        } finally {
-            // Cierra la conexión después de realizar las operaciones
-            console.log('closed conection....')
-            await dbSchool.closeConnection();
-
-        }
-
-    }
+    update,
+    delete_at
 }
 
-function changeDateFormat(date_string) {
-    // Check if the date_string contains slashes (/)
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(date_string)) {
-        // Reemplazar las barras con guiones
-        return date_string.replace(/\//g, '-');
-    }
-    // If the format is different, return the same date_string
-    return date_string;
-}
