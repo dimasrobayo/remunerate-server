@@ -97,6 +97,7 @@ module.exports = {
 
                 const data = {
                     id:                     myUser.id,
+                    id_user_personal_info:  myUser.id_user_personal_info,
                     name:                   myUser.name,
                     lastname:               myUser.lastname,
                     mother_lastname:        myUser.mother_lastname,
