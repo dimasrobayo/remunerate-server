@@ -3,7 +3,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Rol = require('../models/rol');
-const User = require('../models/user_old');
+const User = require('../models/User');
 const keys = require('../config/keys');
 
 module.exports = {
@@ -73,60 +73,51 @@ module.exports = {
     async login(request, response) {
         const email = request.body.email;
         const password = request.body.password;
+
+        const user = await User.findByEmail(email);
         
-        User.findByEmail(email, async(error, myUser) => {
-            if(error) {
-                return response.status(501).json({
-                    success: false,
-                    massage: 'Hubo un error con el registro del usuario',
-                    error: error
-                })
-            }
-            
-            if(!myUser) {
-                return response.status(401).json({ // EL CLIENT NO TIENE AUTORIZACION PARA REALIZAR ESTA PETICION
-                    success: false,
-                    message: 'El email no fue encontrado!'
-                })
-            }
-            
-            const isPasswordValid = await bcrypt.compare(password, myUser.password)
-            
-            if(isPasswordValid){
-                const token = jwt.sign({id: myUser.id, email: myUser.email}, keys.secretOrKey, {});
+        if (!user) {
+            return response.status(401).json({ // EL CLIENT NO TIENE AUTORIZACION PARA REALIZAR ESTA PETICION
+                success: false,
+                message: 'El email no fue encontrado!'
+            })
+        }
 
-                const data = {
-                    id:                     myUser.id,
-                    name:                   myUser.name,
-                    lastname:               myUser.lastname,
-                    mother_lastname:        myUser.mother_lastname,
-                    type_document:          myUser.type_document,
-                    document_number:        myUser.document_number,
-                    gender:                 myUser.gender,
-                    email:                  myUser.email,
-                    phone:                  myUser.phone,
-                    image:                  myUser.image,
-                    myColor:                myUser.my_color,
-                    session_token:          `JWT ${token}`,
-                    roles:                  JSON.parse(myUser.roles),
-                    civilian_information:   myUser.civilian_information,
-                    social_information:     myUser.social_information,
-                    health_information:     myUser.health_information,
-                    address_information:    myUser.address_information,
-                }
+        const isPasswordValid = await bcrypt.compare(password, user.password)
+        if (isPasswordValid) {
+            const token = jwt.sign({ id: user.id, email: user.email }, keys.secretOrKey, {});
 
-                return response.status(201).json({
-                    success: true,
-                    message: 'El usuario fue autenticado',
-                    data:data
-                })
-            }else{
-                return response.status(401).json({
-                    success: false, 
-                    message: 'El password es incorrecto'
-                })
+            const data = {
+                id: user.id,
+                name: user.name,
+                lastname: user.lastname,
+                mother_lastname: user.mother_lastname,
+                type_document: user.type_document,
+                document_number: user.document_number,
+                gender: user.gender,
+                email: user.email,
+                phone: user.phone,
+                image: user.image,
+                myColor: user.my_color,
+                session_token: `JWT ${token}`,
+                roles: JSON.parse(user.roles),
+                civilian_information: user.civilian_information,
+                social_information: user.social_information,
+                health_information: user.health_information,
+                address_information: user.address_information,
             }
-        })
+
+            return response.status(201).json({
+                success: true,
+                message: 'El usuario fue autenticado',
+                data: data
+            })
+        }else {
+            return response.status(401).json({
+                success: false,
+                message: 'El password es incorrecto'
+            })
+        }
     },
 
     async findByUsers(request, response) {
