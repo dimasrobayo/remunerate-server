@@ -22,22 +22,21 @@ const typeSubjectsRoutes = require('./routes/typeSubjects');
 const subjectRoutes = require('./routes/subjectsRoutes');
 const schoolRoutes = require('./routes/schoolRoutes');
 const teachersRoutes = require('./routes/teacherRoutes');
+const matriculaUploadRoutes = require('./routes/matriculaRoutes');
 const utilsRoutes = require('./routes/utilsRoutes');
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
 
-/*
+/**
 * MIDDLEWARE IDENTIFY TENANT
 */
-const tenantMiddleware = require('./middleware/tenantMiddleware');
-app.use(tenantMiddleware);
+const {getTenantDatabaseConnection} = require('./middleware/tenantDbMiddleware');
+app.use(getTenantDatabaseConnection);
 
-// MIDDLEWARE CONECTION TO DATA BASE SCHOOL
-const schoolMiddleware = require('./middleware/schoolMiddleware');
-app.use(schoolMiddleware);
-
-// Use cors middleware with the desired options
+/**
+*  Use cors middleware with the desired options
+*/
 app.use(cors({
     origin: 'https://localhost:3000', // Replace with your actual frontend URL
     credentials: true,
@@ -49,12 +48,12 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-// Configurar express-session
+/**
+* Configurar express-session
+*/
 app.use(sessionConfig);
-
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 app.disable('x-powered-by');
 app.set('port', PORT);
@@ -74,13 +73,16 @@ subjectRoutes(app);
 typeSubjectsRoutes(app);
 schoolRoutes(app);
 teachersRoutes(app, upload);
+matriculaUploadRoutes(app, upload);
 utilsRoutes(app);
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');
 });
 
-// Init Server
+/**
+* Init Server
+*/
 server.listen(PORT, HOST || 'localhost', function(){
     console.log('/////////////////////////////////////////////////////////////////////');
     console.log('//SERVIDOR ORDER NOW EN LINEA en '+ HOST + ':'+ PORT + ' Iniciada...//');

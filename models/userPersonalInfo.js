@@ -25,19 +25,6 @@ user_personal_info.create = async (user,connection_trx) => {
     //const connection = await dbSchool.getConnection();
     const connection = connection_trx;
     try {
-        // const [createPersonalInfoId] = await connection(tableName).insert(
-        //     {
-        //         name: user.name,
-        //         lastname: user.lastname,
-        //         mother_lastname: user.mother_lastname,
-        //         type_document: user.type_document,
-        //         document_number:user.document_number,
-        //         gender: user.gender,
-        //         phone: user.phone,
-        //         image: null
-        //     }
-        // )
-        //console.log(user)
         const [user_personal_info] = await connection.raw(`
             INSERT INTO
             user_personal_info(
@@ -66,7 +53,8 @@ user_personal_info.create = async (user,connection_trx) => {
                 document_number = VALUES(document_number), 
                 gender = VALUES(gender), 
                 phone = VALUES(phone),
-                image = VALUES(image)
+                image = VALUES(image),
+                id = LAST_INSERT_ID(id)
         `);
         //console.log(user_personal_info)
         return user_personal_info.insertId;

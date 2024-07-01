@@ -36,8 +36,8 @@ typesTeaching.create = async (type, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Teaching create')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Teaching create')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -97,8 +97,8 @@ typesTeaching.delete = async (id, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de Teaching delete')
-        await dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de Teaching delete')
+        //await dbSchool.closeConnection();
     }
 }
 

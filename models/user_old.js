@@ -3,13 +3,14 @@ const dbSchool = require('../db');
 const User = {};
 
 User.findById = async (id, result) => {
+    let connection;
+
     try {
         connection = await dbSchool.getConnection();
         
         const [user] = await connection.raw(`
         SELECT 
             u.id,
-            upi.id as id_user_personal_info,
             upi.name,
             upi.lastname,
             u.email,
@@ -40,35 +41,44 @@ User.findById = async (id, result) => {
 }
 
 User.findByEmail = async(email, result) => {
+    let connection;
+
     try {
-        const connection = await dbSchool.getConnection();
+        connection = await dbSchool.getConnection();
         
-        const user = await connection('users as u')
-        .select([
-          'u.id',
-          'upi.id as id_user_personal_info',
-          'upi.name',
-          'upi.lastname',
-          'upi.mother_lastname',
-          'upi.type_document',
-          'upi.document_number',
-          'su.description as status',
-          'u.email',
-          'u.my_color',
-          'u.grayscale',
-          'upi.gender',
-          'upi.phone',
-          'upi.image',
-          'u.password',
-          connection.raw(`JSON_ARRAYAGG(JSON_OBJECT('id', CAST(r.id AS CHAR), 'name', r.name, 'image', r.image, 'route', r.route)) as roles`)
-        ])
-        .innerJoin('user_has_roles as uhr', 'uhr.users_id', 'u.id')
-        .innerJoin('roles as r', 'r.id', 'uhr.roles_id')
-        .innerJoin('user_personal_info as upi', 'upi.id', 'u.user_personal_info_id')
-        .innerJoin('status_users as su', 'su.id', 'u.status_user_id')
-        .where('u.email', email)
-        .andWhere('u.status_user_id', 1)
-        .groupBy('u.id');
+        const [user] = await connection.raw(`
+        SELECT 
+            u.id,
+            upi.id as id_user_personal_info,
+            upi.name,
+            upi.lastname,
+            upi.mother_lastname,
+            upi.type_document,
+            upi.document_number,
+            su.description AS status,
+            u.email,
+            u.my_color,
+            u.grayscale,
+            upi.gender,
+            upi.phone,
+            upi.image,
+            u.password,
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'id', CONVERT(r.id, char),
+                    'name', r.name,
+                    'image', r.image,
+                    'route', r.route
+                )
+            ) AS roles
+        FROM users AS u
+        INNER JOIN user_has_roles AS uhr ON uhr.users_id = u.id
+        INNER JOIN roles AS r ON r.id = uhr.roles_id
+        INNER JOIN user_personal_info AS upi ON upi.id = u.user_personal_info_id
+        INNER JOIN status_users AS su ON su.id = u.status_user_id
+        WHERE u.email = '${email}' and u.status_user_id = 1
+        GROUP BY u.id
+        `);
         
         if(user[0]){
             const [civilian_information] = await connection.raw(`
@@ -106,7 +116,7 @@ User.findByEmail = async(email, result) => {
             user[0]['health_information'] = health_information[0] ? health_information[0] : {};;
             user[0]['address_information'] = address_information ? address_information : {};;
         }
-        console.log(user[0])
+        
         result(null, user[0])
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
@@ -114,8 +124,8 @@ User.findByEmail = async(email, result) => {
     }
     finally {
         // Cierra la conexión después de realizar las operaciones
-        console.log('Cierra la conexión después de realiza')
-        dbSchool.closeConnection();
+        //console.log('Cierra la conexión después de realiza')
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -196,7 +206,7 @@ User.register = async (user, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de realizar el register')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -338,7 +348,7 @@ User.registerWithImage = async (user, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de realizar el register with image')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -369,7 +379,7 @@ User.findByUsers = async (result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de findByUsers')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
@@ -455,13 +465,13 @@ User.findUsersById = async (id, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de findUsersById')
-        await dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
 }
 
 User.updateWithOutImage = async (user, result) => {
+    let connection;
     const {health_information, social_information, civilian_information, roles} = user;
-    console.log('user', user.myColor)
     
     try {
         connection = await dbSchool.getConnection();
@@ -498,15 +508,20 @@ User.updateWithOutImage = async (user, result) => {
             `);
 
             // UPDATE CIVILIAN INFO SESSION
-            const getUserCivilianInformation = await connection('user_civilian_information as uci')
-                .select('uci.*')
-                .where('user_personal_info_id', user.id_user_personal_info);
+            const [getUserCivilianInformation] = await connection.raw(`
+                SELECT 
+                    * 
+                FROM 
+                    user_civilian_information 
+                WHERE 
+                    user_personal_info_id = ${user.id}
+            `);
             
             if(getUserCivilianInformation.length > 0){
                 const [user_civilian_information] = await connection.raw(`
                     UPDATE user_civilian_information
                     SET
-                        user_personal_info_id = ${user.id_user_personal_info},
+                        user_personal_info_id = ${user.id},
                         birthdate = '${civilian_information.birthdate}',
                         country_birth = '${civilian_information.country_birth}',
                         nationality = '${civilian_information.nationality}',
@@ -523,7 +538,7 @@ User.updateWithOutImage = async (user, result) => {
                         country_birth,
                         nationality
                     )VALUES(
-                        ${user.id_user_personal_info},
+                        ${user.id},
                         '${civilian_information.birthdate}',
                         '${civilian_information.country_birth}',
                         '${civilian_information.nationality}'
@@ -540,7 +555,7 @@ User.updateWithOutImage = async (user, result) => {
                 FROM 
                     user_health_information 
                 WHERE 
-                    user_personal_info_id = ${user.id_user_personal_info}
+                    user_personal_info_id = ${user.id}
             `);
 
             if(getUserHealthInformation.length > 0){
@@ -552,7 +567,7 @@ User.updateWithOutImage = async (user, result) => {
                         observation = '${health_information.observation}',
                         updated_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
                     WHERE
-                        user_personal_info_id = ${user.id_user_personal_info}
+                        user_personal_info_id = ${user.id}
                 `)
             }else{
                 const [user_health_information] = await connection.raw(`
@@ -563,7 +578,7 @@ User.updateWithOutImage = async (user, result) => {
                         allergy,
                         observation
                     )VALUES(
-                        ${user.id_user_personal_info},
+                        ${user.id},
                         '${health_information.blood_type}',
                         '${health_information.allergy}',
                         '${health_information.observation}'
@@ -580,7 +595,7 @@ User.updateWithOutImage = async (user, result) => {
                 FROM 
                     user_social_information 
                 WHERE 
-                    user_personal_info_id = ${user.id_user_personal_info}
+                    user_personal_info_id = ${user.id}
             `);
 
             if(getUserSocialInformation.length > 0){
@@ -591,7 +606,7 @@ User.updateWithOutImage = async (user, result) => {
                         phone = '${social_information.phone}',
                         updated_at ='${new Date().toISOString().slice(0, 19).replace('T', ' ')}'
                     WHERE
-                        user_personal_info_id = ${user.id_user_personal_info}
+                        user_personal_info_id = ${user.id}
                 `);
             }else{
                 const [user_social_information] = await connection.raw(`
@@ -601,7 +616,7 @@ User.updateWithOutImage = async (user, result) => {
                         email,
                         phone
                     )VALUES(
-                        ${user.id_user_personal_info},
+                        ${user.id},
                         '${social_information.email}',
                         '${social_information.phone}'
                     )
@@ -620,8 +635,8 @@ User.updateWithOutImage = async (user, result) => {
                 WHERE
                     id = ${user.id}
             `);
+        //await connection.commit();
         });
-
         result(null, user);
     } catch (error) {
         console.error('Error fetching users from tenant database', error);
@@ -630,8 +645,8 @@ User.updateWithOutImage = async (user, result) => {
     finally {
         // Cierra la conexión después de realizar las operaciones
         console.log('Cierra la conexión después de updateWithOutImage')
-        dbSchool.closeConnection();
+        //await dbSchool.closeConnection();
     }
-}
+} 
 
 module.exports = User;
