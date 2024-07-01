@@ -647,6 +647,6 @@ User.updateWithOutImage = async (user, result) => {
         console.log('Cierra la conexión después de updateWithOutImage')
         //await dbSchool.closeConnection();
     }
-}
+} 
 
 module.exports = User;

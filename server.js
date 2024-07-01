@@ -28,20 +28,15 @@ const utilsRoutes = require('./routes/utilsRoutes');
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
 
-/*
+/**
 * MIDDLEWARE IDENTIFY TENANT
 */
-//const tenantMiddleware = require('./middleware/tenantMiddleware');
-//app.use(tenantMiddleware);
-
-// MIDDLEWARE CONECTION TO DATA BASE SCHOOL
-//const schoolMiddleware = require('./middleware/schoolMiddleware');
-//app.use(schoolMiddleware);
-
 const {getTenantDatabaseConnection} = require('./middleware/tenantDbMiddleware');
 app.use(getTenantDatabaseConnection);
 
-// Use cors middleware with the desired options
+/**
+*  Use cors middleware with the desired options
+*/
 app.use(cors({
     origin: 'https://localhost:3000', // Replace with your actual frontend URL
     credentials: true,
@@ -53,12 +48,12 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-// Configurar express-session
+/**
+* Configurar express-session
+*/
 app.use(sessionConfig);
-
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 app.disable('x-powered-by');
 app.set('port', PORT);
@@ -85,7 +80,9 @@ app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');
 });
 
-// Init Server
+/**
+* Init Server
+*/
 server.listen(PORT, HOST || 'localhost', function(){
     console.log('/////////////////////////////////////////////////////////////////////');
     console.log('//SERVIDOR ORDER NOW EN LINEA en '+ HOST + ':'+ PORT + ' Iniciada...//');

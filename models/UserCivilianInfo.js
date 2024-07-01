@@ -1,4 +1,5 @@
 const BaseModel = require('./BaseModel');
+const UserPersonalInfo = require('./UserPersonalInfo');
 
 /**
  * Model UserCivilianInfo
@@ -13,6 +14,26 @@ class UserCivilianInfo extends BaseModel {
    */
   static get tableName() {
     return 'user_civilian_information'; // Cambiar el nombre de la tabla
+  }
+
+  static get idColumn() {
+    return 'user_personal_info_id';
+  }
+
+  /**
+   * Define the relation mappings for the model.
+   */
+  static get relationMappings() {
+    return {
+      personalInfo: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: UserPersonalInfo,
+        join: {
+          from: 'user_civilian_information.user_personal_info_id',
+          to: 'user_personal_info.id'
+        }
+      }
+    };
   }
 
   /**
