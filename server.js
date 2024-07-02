@@ -11,19 +11,8 @@ const multer = require('multer');
 const sessionConfig = require('./utils/sessionConfig');
 require('./config/passport')(passport);
 
-/*
-* IMPORT TO THE ROUTES
-*/
-const useRoutes = require('./routes/useRoutes');
-const typeTeachingRoutes = require('./routes/typeTeachingRoutes');
-const gradesRoutes = require('./routes/gradesRoutes');
-const coursesRoutes = require('./routes/coursesRoutes');
-const typeSubjectsRoutes = require('./routes/typeSubjects');
-const subjectRoutes = require('./routes/subjectsRoutes');
-const schoolRoutes = require('./routes/schoolRoutes');
-const teachersRoutes = require('./routes/teacherRoutes');
-const matriculaUploadRoutes = require('./routes/matriculaRoutes');
-const utilsRoutes = require('./routes/utilsRoutes');
+// Importar las rutas centralizadas
+const initializeRoutes = require('./routes');
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
@@ -63,25 +52,16 @@ const upload = multer({
 })
 
 /*
-* CALL TO THE ROUTES
+* Inicializar las rutas
 */
-useRoutes(app, upload);
-typeTeachingRoutes(app);
-gradesRoutes(app);
-coursesRoutes(app);
-subjectRoutes(app);
-typeSubjectsRoutes(app);
-schoolRoutes(app);
-teachersRoutes(app, upload);
-matriculaUploadRoutes(app, upload);
-utilsRoutes(app);
+initializeRoutes(app, upload);
 
 app.get('/', (request, response) => {
     response.send('Ruta raiz del backend');
 });
 
 /**
-* Init Server
+* INIT SERVER
 */
 server.listen(PORT, HOST || 'localhost', function(){
     console.log('/////////////////////////////////////////////////////////////////////');
