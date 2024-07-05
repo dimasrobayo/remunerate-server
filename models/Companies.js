@@ -23,7 +23,7 @@ class Companies extends BaseModel {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['id', 'sys_mutual_id', 'sys_caja_compensacion_id', 'sys_community_id'],
+      required: ['sys_mutual_id', 'sys_caja_compensacion_id', 'sys_community_id'],
       properties: {
         id: { type: 'integer' },
         sys_mutual_id: { type: 'integer' },

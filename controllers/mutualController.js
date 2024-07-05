@@ -10,9 +10,17 @@ const Mutual = require('../models/Mutual');
 const index = async (request, response) => {
     try {
         const mutual = await Mutual.query();
-        response.status(200).json(mutual);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Listado de mutual!',
+            data: mutual
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -26,9 +34,16 @@ const index = async (request, response) => {
 const create = async (request, response) => {
     try {
         const newMutual = await Mutual.query().insert(request.body);
-        response.status(201).json(newMutual);
+        return response.status(200).json({
+            success: true,
+            message: 'Mutual creada con exito!',
+            data: newMutual
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -43,9 +58,17 @@ const update = async (request, response) => {
     try {
         const { id, ...mutualData } = request.body;
         const updatedMutual = await Mutual.query().patchAndFetchById(id, mutualData);
-        response.status(200).json(updatedMutual);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Mutual actualiada con exito!',
+            data: updatedMutual
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -62,9 +85,16 @@ const softDelete = async (request, response) => {
         const deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // Formato 'YYYY-MM-DD HH:MM:SS'
 
         await Mutual.query().patchAndFetchById(id, { deleted_at: deletedAt });
-        response.status(200).json({ message: 'Mutual eliminada con exito!' });
+
+        return response.status(200).json({
+            success: true,
+            message: 'Mutual eliminada con exito!'
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 

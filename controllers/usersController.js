@@ -58,7 +58,7 @@ const login = async (request, response) => {
                 address_information: user.personalInfo.addressInformation,
             }
     
-            return response.status(201).json({
+            return response.status(200).json({
                 success: true,
                 message: 'El usuario fue autenticado',
                 data: data
@@ -220,7 +220,7 @@ const register = async (request, response) => {
             console.log('Error en la transacción: UserPersonalInfo', error.message);
         }
 
-        return response.status(201).json({
+        return response.status(200).json({
             success: true,
             message: 'Usuario registrado con exito',
             data: user
@@ -409,7 +409,7 @@ const registerWithImage = async (request, response) => {
             console.log('Error en la transacción: UserPersonalInfo', error.message);
         }
 
-        return response.status(201).json({
+        return response.status(200).json({
             success: true,
             message: 'Usuario registrado con exito',
             data: user

@@ -10,9 +10,17 @@ const Companies = require('../models/Companies');
 const index = async (request, response) => {
     try {
         const companies = await Companies.query();
-        response.status(200).json(companies);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Listado de empresa!',
+            data: companies
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -26,9 +34,17 @@ const index = async (request, response) => {
 const create = async (request, response) => {
     try {
         const newCompany = await Companies.query().insert(request.body);
-        response.status(201).json(newCompany);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Empresa creada con exito!',
+            data: newCompany
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -43,9 +59,17 @@ const update = async (request, response) => {
     try {
         const { id, ...companyData } = request.body;
         const updatedCompany = await Companies.query().patchAndFetchById(id, companyData);
-        response.status(200).json(updatedCompany);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Empresa actualizada con exito!',
+            data: updatedCompany
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -59,10 +83,19 @@ const update = async (request, response) => {
 const softDelete = async (request, response) => {
     try {
         const { id } = request.body;
-        await Companies.query().patchAndFetchById(id, { deleted_at: new Date().toISOString() });
-        response.status(200).json({ message: 'Company soft deleted successfully' });
+        const deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // Formato 'YYYY-MM-DD HH:MM:SS'
+
+        await Companies.query().patchAndFetchById(id, { deleted_at: deletedAt });
+
+        return response.status(200).json({
+            success: true,
+            message: 'Empresa Eliminada con exito!'
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 

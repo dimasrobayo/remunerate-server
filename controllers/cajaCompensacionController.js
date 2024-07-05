@@ -10,9 +10,17 @@ const CajaCompensacion = require('../models/CajaCompensacion');
 const index = async (request, response) => {
     try {
         const cajaCompensacion = await CajaCompensacion.query();
-        response.status(200).json(cajaCompensacion);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Listado de cajas de compensación!',
+            data: cajaCompensacion
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -27,8 +35,17 @@ const create = async (request, response) => {
     try {
         const newCajaCompensacion = await CajaCompensacion.query().insert(request.body);
         response.status(201).json(newCajaCompensacion);
+        return response.status(200).json({
+            success: true,
+            message: 'Cajas de compensación creada con exito!',
+            data: newCajaCompensacion
+        });
     } catch (error) {
         response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -43,9 +60,17 @@ const update = async (request, response) => {
     try {
         const { id, ...cajaCompensacionData } = request.body;
         const updatedCajaCompensacion = await CajaCompensacion.query().patchAndFetchById(id, cajaCompensacionData);
-        response.status(200).json(updatedCajaCompensacion);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Cajas de compensación actualizada con exito!',
+            data: updatedCajaCompensacion
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
@@ -62,9 +87,16 @@ const softDelete = async (request, response) => {
         const deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // Formato 'YYYY-MM-DD HH:MM:SS'
         
         await CajaCompensacion.query().patchAndFetchById(id, { deleted_at: deletedAt });
-        response.status(200).json({ message: 'CajaCompensacion Eliminada con exito' });
+
+        return response.status(200).json({
+            success: true,
+            message: 'CajaCompensacion Eliminada con exito'
+        });
     } catch (error) {
-        response.status(500).json({ error: error.message });
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 };
 
