@@ -59,8 +59,8 @@ class InstitutionType extends BaseModel {
             relation: Model.HasManyRelation,
             modelClass: Institution,
             join: {
-                from: 'sys_institutions_types.id',
-                to: 'sys_institutions.sys_details_institutions_id'
+              from: 'sys_institutions_types.id',
+              to: 'sys_institutions.sys_details_institutions_id'
             }
         }
     };

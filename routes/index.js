@@ -3,7 +3,7 @@ const userRoutes = require('./useRoutes');
 const companiesRoutes = require('./companiesRoutes');
 const mutualRoutes = require('./mutualRoutes');
 const cajaCompensacionRoutes = require('./cajaCompensacionRoutes');
-const ListsRoutes = require('./ListsRoutes');
+const listsRoutes = require('./listsRoutes');
 const typesConceptsRoutes = require('./typesConceptsRoutes');
 const internarCategoriesRoutes = require('./internalCategoriesRoutes');
 const institutionsTypesRoutes = require('./institutionsTypesRoutes');
@@ -15,7 +15,7 @@ module.exports = (app, upload) => {
     mutualRoutes(app);
     cajaCompensacionRoutes(app);
     companiesRoutes(app);
-    ListsRoutes(app);
+    listsRoutes(app);
     typesConceptsRoutes(app);
     internarCategoriesRoutes(app);
     institutionsTypesRoutes(app);

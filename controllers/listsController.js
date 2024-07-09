@@ -27,6 +27,31 @@ const getAllLists = async (request, response) => {
 };
 
 /**
+ * Controller function to get all lists.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const getOnlyLists = async (request, response) => {
+    try {
+        const lists = await Lists.query().orderBy('name');
+        
+        return response.status(200).json({
+            success: true,
+            message: 'Listado de listas.',
+            data: lists
+        });
+    } catch (error) {
+        return response.status(500).json({
+            success: false,
+            message: 'Error al recuperar la lista.',
+            error: error.message
+        });
+    }
+};
+
+/**
  * Controller function to get a list by ID.
  * 
  * @param {Object} request The request object from Express.
@@ -34,10 +59,10 @@ const getAllLists = async (request, response) => {
  * @returns {Promise<void>} Promise indicating the completion of the function.
  */
 const getListById = async (request, response) => {
-    const id = request.params.id;
+    const { id } = request.params;
 
     try {
-        const list = await Lists.query().findById(id).withGraphFetched('values');
+        const list = await ValuesLists.query().findById(id);
         
         if (!list) {
             return response.status(404).json({
@@ -68,13 +93,8 @@ const getListById = async (request, response) => {
  * @returns {Promise<void>} Promise indicating the completion of the function.
  */
 const createList = async (request, response) => {
-    const { name, values } = request.body;
-
     try {
-        const newList = await Lists.query().insertGraphAndFetch({
-            name,
-            values
-        });
+        const newList = await ValuesLists.query().insert(request.body);
 
         return response.status(200).json({
             success: true,
@@ -98,19 +118,32 @@ const createList = async (request, response) => {
  * @returns {Promise<void>} Promise indicating the completion of the function.
  */
 const updateList = async (request, response) => {
-    const { id, name, values } = request.body;
+    const { id } = request.params;
+    const { sys_lists_id, item, name, value_a, value_b, value_c } = request.body;
 
     try {
-        const updatedList = await Lists.query().upsertGraphAndFetch({
-            id,
+        // Verificar que el registro existe antes de intentar actualizarlo
+        const valueList = await ValuesLists.query().findById(id);
+        if (!valueList) {
+            return response.status(404).json({
+                success: false,
+                message: 'Lista no encontrada.'
+            });
+        }
+
+        // Realizar la actualización
+        const updatedValueList = await ValuesLists.query().patchAndFetchById(id, {
+            item,
             name,
-            values
+            value_a,
+            value_b,
+            value_c
         });
 
         return response.status(200).json({
             success: true,
             message: 'Lista actualizada con exito.',
-            data: updatedList
+            data: updatedValueList
         });
     } catch (error) {
         return response.status(500).json({
@@ -129,7 +162,7 @@ const updateList = async (request, response) => {
  * @returns {Promise<void>} Promise indicating the completion of the function.
  */
 const deleteList = async (request, response) => {
-    const { id } = request.body;
+    const { id } = request.params;
     const deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // Formato 'YYYY-MM-DD HH:MM:SS'
 
     try {
@@ -157,6 +190,7 @@ const deleteList = async (request, response) => {
 
 module.exports = {
     getAllLists,
+    getOnlyLists,
     getListById,
     createList,
     updateList,
