@@ -1,6 +1,5 @@
 const { Model } = require('objection');
 const BaseModel = require('./BaseModel');
-const Institution = require('./Institutions');
 
 /**
  * Model for sys_institutions_types
@@ -36,7 +35,6 @@ class InstitutionType extends BaseModel {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: [],
       properties: {
         id: { type: 'integer' },
         name: { type: 'string', maxLength: 45 },
@@ -54,15 +52,16 @@ class InstitutionType extends BaseModel {
    * @returns {Object} The relation mappings for the Institution model.
    */
   static get relationMappings() {
+    const Institution = require('./Institutions');
     return {
-        institutions: {
-            relation: Model.HasManyRelation,
-            modelClass: Institution,
-            join: {
-              from: 'sys_institutions_types.id',
-              to: 'sys_institutions.sys_details_institutions_id'
-            }
+      institutions: {
+        relation: Model.HasManyRelation,
+        modelClass: Institution,
+        join: {
+          from: 'sys_institutions_types.id',
+          to: 'sys_institutions.sys_details_institutions_id'
         }
+      }
     };
   }
 }

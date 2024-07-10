@@ -9,7 +9,8 @@ const Companies = require('../models/Companies');
  */
 const index = async (request, response) => {
     try {
-        const companies = await Companies.query();
+        const companies = await Companies.query()
+        .withGraphFetched('[ccaf, mutual]');
 
         return response.status(200).json({
             success: true,

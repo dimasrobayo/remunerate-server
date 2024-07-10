@@ -1,6 +1,4 @@
-const { Model } = require('objection');
 const BaseModel = require('./BaseModel');
-const InstitutionType = require('./InstitutionsTypes');
 
 /**
  * Model for sys_institutions
@@ -59,10 +57,15 @@ class Institution extends BaseModel {
    * @returns {Object} The relation mappings for the Institution model.
    */
   static get relationMappings() {
+    const InstitutionType = require('./InstitutionsTypes');
     return {
       institutionType: {
-        relation: Model.BelongsToOneRelation,
-        modelClass: InstitutionType
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: InstitutionType,
+        join: {
+          from: 'sys_institutions.sys_details_institutions_id',
+          to: 'sys_institutions_types.id'
+        }
       }
     };
   }
