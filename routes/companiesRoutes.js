@@ -8,7 +8,8 @@ module.exports = (app) => {
     // DELETE -> ELIMINAR DATOS
     // 401 UNAUTHORIZED
     app.get('/api/companies', passport.authenticate('jwt', {session: false}), companiesController.index);
+    app.get('/api/companies/companybyid/:id', passport.authenticate('jwt', {session: false}), companiesController.getCompanybyid);
     app.post('/api/companies/create', passport.authenticate('jwt', {session: false}), companiesController.create);
-    app.put('/api/companies/update', passport.authenticate('jwt', {session: false}), companiesController.update);
-    app.delete('/api/companies/delete', passport.authenticate('jwt', {session: false}), companiesController.softDelete);
+    app.put('/api/companies/update/:id', passport.authenticate('jwt', {session: false}), companiesController.update);
+    app.delete('/api/companies/delete/:id', passport.authenticate('jwt', {session: false}), companiesController.softDelete);
 }
