@@ -1,6 +1,8 @@
 const BaseModel = require('./BaseModel');
 const Institutions = require('./Institutions');
 const Community = require('./Community');
+const Province = require('./Province');
+const Region = require('./Region');
 
 /**
  * Model Companies
@@ -90,6 +92,22 @@ class Companies extends BaseModel {
         join: {
           from: 'sys_companies.sys_community_id',
           to: 'sys_community.id'
+        }
+      },
+      province: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: Province,
+        join: {
+          from: 'sys_community.provincia_id',
+          to: 'sys_provinces.id'
+        }
+      },
+      region: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: Region,
+        join: {
+          from: 'sys_provinces.region_id',
+          to: 'sys_regions.id'
         }
       },
       ccaf: {

@@ -10,7 +10,7 @@ const Companies = require('../models/Companies');
 const index = async (request, response) => {
     try {
         const companies = await Companies.query().whereNull('deleted_at')
-        .withGraphFetched('[ccaf, mutual]');
+        .withGraphFetched('[community.province.region, ccaf, mutual]');
 
         return response.status(200).json({
             success: true,
@@ -36,7 +36,7 @@ const getCompanybyid = async (request, response) => {
     const { id } = request.params;
     try {
         const companies = await Companies.query().findById(id).whereNull('deleted_at')
-        .withGraphFetched('[ccaf, mutual]');
+        .withGraphFetched('[community.province.region, ccaf, mutual]');
 
         return response.status(200).json({
             success: true,

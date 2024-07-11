@@ -61,6 +61,45 @@ const getInstitutionById = async (request, response) => {
 };
 
 /**
+ * Controller function to get an institution by ID.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const getListInstitutionsById = async (request, response) => {
+    const { id } = request.params;
+    console.log(id);
+    try {
+        // Buscar el tipo de institución por nombre
+        const institutionType = await InstitutionType.query().findById(id);
+
+        if (!institutionType) {
+            return response.status(404).json({
+                success: false,
+                message: 'Institution type not found.'
+            });
+        }
+
+        // Obtener todas las instituciones relacionadas con este tipo
+        const institutions = await Institution.query()
+            .where('sys_details_institutions_id', institutionType.id);
+
+        return response.status(200).json({
+            success: true,
+            message: 'Institutions found.',
+            data: institutions
+        });
+    } catch (error) {
+        return response.status(500).json({
+            success: false,
+            message: 'Error retrieving institutions.',
+            error: error.message
+        });
+    }
+};
+
+/**
  * Controller function to create a new institution.
  * 
  * @param {Object} request The request object from Express.
@@ -169,5 +208,6 @@ module.exports = {
     getInstitutionById,
     createInstitution,
     updateInstitution,
-    deleteInstitution
+    deleteInstitution,
+    getListInstitutionsById
 };
