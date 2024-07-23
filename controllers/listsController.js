@@ -86,6 +86,55 @@ const getListById = async (request, response) => {
 };
 
 /**
+ * Controller function to get all lists.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const getListValuesById = async (request, response) => {
+    try {
+        const { id } = request.params;
+        
+        // Verificar que el ID esté presente
+        if (!id) {
+            return response.status(400).json({
+                success: false,
+                message: 'ID de la lista es requerido.'
+            });
+        }
+        
+        // Consultar la lista específica por ID junto con sus valores asociados
+        const list = await Lists.query()
+            .findById(id)
+            .withGraphFetched('values')
+            .modifyGraph('values', builder => {
+                builder.whereNull('deleted_at');
+            });
+        
+        // Verificar que la lista exista
+        if (!list) {
+            return response.status(404).json({
+                success: false,
+                message: 'Lista no encontrada.'
+            });
+        }
+
+        return response.status(200).json({
+            success: true,
+            message: 'Listado de la lista.',
+            data: list
+        });
+    } catch (error) {
+        return response.status(500).json({
+            success: false,
+            message: 'Error al recuperar la lista.',
+            error: error.message
+        });
+    }
+};
+
+/**
  * Controller function to create a new list.
  * 
  * @param {Object} request The request object from Express.
@@ -166,7 +215,7 @@ const deleteList = async (request, response) => {
     const deletedAt = new Date().toISOString().slice(0, 19).replace('T', ' '); // Formato 'YYYY-MM-DD HH:MM:SS'
 
     try {
-        const deletedList = await Lists.query().findById(id).patch({ deleted_at: deletedAt });
+        const deletedList = await ValuesLists.query().findById(id).patch({ deleted_at: deletedAt });
         
         if (!deletedList) {
             return response.status(404).json({
@@ -192,6 +241,7 @@ module.exports = {
     getAllLists,
     getOnlyLists,
     getListById,
+    getListValuesById,
     createList,
     updateList,
     deleteList

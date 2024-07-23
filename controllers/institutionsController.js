@@ -69,7 +69,7 @@ const getInstitutionById = async (request, response) => {
  */
 const getListInstitutionsById = async (request, response) => {
     const { id } = request.params;
-    console.log(id);
+
     try {
         // Buscar el tipo de institución por nombre
         const institutionType = await InstitutionType.query().findById(id);

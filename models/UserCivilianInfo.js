@@ -21,6 +21,34 @@ class UserCivilianInfo extends BaseModel {
   }
 
   /**
+   * The JSON schema for the model.
+   * 
+   * @returns {Object} The JSON schema.
+   */
+  static get jsonSchema() {
+    return {
+      type: 'object',
+      required: ['user_personal_info_id', 'birthdate', 'country_birth', 'nationality'],
+
+      properties: {
+        id: { type: 'integer' },
+        user_personal_info_id: { type: 'integer' },
+        birthdate: { type: 'string', maxLength: 10 },
+        country_birth: { type: 'string', maxLength: 50 },
+        nationality: { type: 'string', maxLength: 50 },
+        civil_status: { type: 'string', maxLength: 50, nullable: true },
+        study_level: { type: 'integer' },
+        driver_license: { type: 'integer' },
+        profession: { type: 'integer' },
+        occupational_level: { type: 'integer' },
+        observaciones: { type: 'string', maxLength: 255, nullable: true },
+        created_at: { type: 'string', format: 'date-time' },
+        updated_at: { type: 'string', format: 'date-time' }
+      }
+    };
+  }
+
+  /**
    * Define the relation mappings for the model.
    */
   static get relationMappings() {
@@ -45,8 +73,6 @@ class UserCivilianInfo extends BaseModel {
   static get idColumn() {
     return 'id';
   }
-
- 
 }
 
 module.exports = UserCivilianInfo;

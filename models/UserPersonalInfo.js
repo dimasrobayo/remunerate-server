@@ -3,8 +3,10 @@ const User = require('./User');
 const UserCivilianInformation = require('./UserCivilianInfo');
 const UserSocialInformation = require('./UserSocialInfo');
 const UserHealthInformation = require('./UserHealthInfo');
-const { join } = require('path');
 const UserAddress = require('./UserAddress');
+const UserAddressPersonalInfo = require('./UserAddressPersonalInfo');
+const UserHealthPension = require('./UserHealthPension');
+const UserPaymentMethod = require('./UserPaymentMethod');
 
 /**
  * Model UserPersonalInfo
@@ -35,7 +37,6 @@ class UserPersonalInfo extends BaseModel {
         gender: { type: 'string' },
         phone: { type: 'string' },
         image: { type: 'string' },
-        // Otros campos de tu tabla
       }
     };
   }
@@ -88,6 +89,22 @@ class UserPersonalInfo extends BaseModel {
           },
           to: 'user_addresses.id'
         }
+      },
+      healthPension: {
+        relation: BaseModel.HasOneRelation,
+        modelClass: UserHealthPension,
+        join: {
+          from: 'user_personal_info.id',
+          to: 'user_health_pension.user_personal_info_id'
+        }
+      },
+      paymentMethod: {
+        relation: BaseModel.HasOneRelation,
+        modelClass: UserPaymentMethod,
+        join: {
+          from: 'user_personal_info.id',
+          to: 'user_payment_method.user_personal_info_id'
+        }
       }
     };
   }
@@ -101,8 +118,6 @@ class UserPersonalInfo extends BaseModel {
   static get idColumn() {
     return 'id';
   }
-
- 
 }
 
 module.exports = UserPersonalInfo;

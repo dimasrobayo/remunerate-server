@@ -17,11 +17,32 @@ class UserSocialInfo extends BaseModel {
   }
 
   /**
+   * The JSON schema for the model.
+   * 
+   * @returns {Object} The JSON schema.
+   */
+  static get jsonSchema() {
+    return {
+      type: 'object',
+      required: ['user_personal_info_id', 'email', 'email_corporative', 'phone'],
+
+      properties: {
+        id: { type: 'integer' },
+        user_personal_info_id: { type: 'integer' },
+        email: { type: 'string', maxLength: 100 },
+        email_corporative: { type: 'string', maxLength: 100 },
+        phone: { type: 'string', maxLength: 45 },
+        phone2: { type: 'string', maxLength: 45, nullable: true },
+        created_at: { type: 'string', format: 'date-time' },
+        updated_at: { type: 'string', format: 'date-time' }
+      }
+    };
+  }
+
+  /**
    * Define the relation mappings for the model.
    */
   static get relationMappings() {
-    const UserCivilianInformation = require('./UserCivilianInformation');
-
     return {
       personalInfo: {
         relation: BaseModel.BelongsToOneRelation,
@@ -43,8 +64,6 @@ class UserSocialInfo extends BaseModel {
   static get idColumn() {
     return 'id';
   }
-
- 
 }
 
 module.exports = UserSocialInfo;

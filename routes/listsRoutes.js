@@ -11,6 +11,7 @@ module.exports = (app, upload) => {
     app.get('/api/lists', passport.authenticate('jwt', {session: false}), listsController.getAllLists);
     app.get('/api/onlylists', passport.authenticate('jwt', {session: false}), listsController.getOnlyLists);
     app.get('/api/lists/listsbyid/:id', passport.authenticate('jwt', {session: false}), listsController.getListById);
+    app.get('/api/lists/listsvaluesbyid/:id', passport.authenticate('jwt', {session: false}), listsController.getListValuesById);
     app.post('/api/lists/create', passport.authenticate('jwt', {session: false}), listsController.createList);
     app.put('/api/lists/update/:id', passport.authenticate('jwt', {session: false}), listsController.updateList);
     app.delete('/api/lists/delete/:id', passport.authenticate('jwt', {session: false}), listsController.deleteList);

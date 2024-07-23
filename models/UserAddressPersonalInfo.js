@@ -24,8 +24,6 @@ class UserAddressPersonalInfo extends BaseModel {
   static get idColumn() {
     return 'id';
   }
-
- 
 }
 
 module.exports = UserAddressPersonalInfo;
