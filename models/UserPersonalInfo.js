@@ -4,23 +4,12 @@ const UserCivilianInformation = require('./UserCivilianInfo');
 const UserSocialInformation = require('./UserSocialInfo');
 const UserHealthInformation = require('./UserHealthInfo');
 const UserAddress = require('./UserAddress');
-const UserAddressPersonalInfo = require('./UserAddressPersonalInfo');
 const UserHealthPension = require('./UserHealthPension');
 const UserPaymentMethod = require('./UserPaymentMethod');
 
-/**
- * Model UserPersonalInfo
- */
 class UserPersonalInfo extends BaseModel {
-
-  /**
-   * [required]
-   * The table name for the UserPersonalInfo model.
-   * 
-   * @returns {string} The table name for the UserPersonalInfo model.
-   */
   static get tableName() {
-    return 'user_personal_info'; // Cambiar el nombre de la tabla
+    return 'user_personal_info';
   }
 
   static get jsonSchema() {
@@ -41,9 +30,6 @@ class UserPersonalInfo extends BaseModel {
     };
   }
 
-  /**
-  * Define the relation mappings for the model.
-  */
   static get relationMappings() {
     return {
       user: {
@@ -109,12 +95,6 @@ class UserPersonalInfo extends BaseModel {
     };
   }
 
-  /**
-   * [optional]
-   * The primary key column for the UserPersonalInfo model.
-   * 
-   * @returns {string} The primary key column for the UserPersonalInfo model.
-   */
   static get idColumn() {
     return 'id';
   }

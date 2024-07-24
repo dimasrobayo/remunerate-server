@@ -1,24 +1,40 @@
 const BaseModel = require('./BaseModel');
 const UserPersonalInfo = require('./UserPersonalInfo');
+const Community = require('./Community');
 
-/**
-* Model UserAddress
-*/
 class UserAddress extends BaseModel {
-
-  /**
-  * [required]
-  * The table name for the UserAddress model.
-  * 
-  * @returns {string} The table name for the UserAddress model.
-  */
   static get tableName() {
-    return 'user_addresses'; // Cambiar el nombre de la tabla
+    return 'user_addresses';
   }
 
-  /**
-   * Define the relation mappings for the model.
-   */
+  static get jsonSchema() {
+    return {
+      type: 'object',
+      required: [],
+      properties: {
+        id: { type: 'integer' },
+        address: { type: 'string' },
+        block: { type: 'string' },
+        codigo_postal: { type: 'string' },
+        department_number: { type: 'string' },
+        housing_type: { type: 'string' },
+        sys_community_id: { type: 'integer' }
+      }
+    };
+  }
+
+  async $beforeInsert() {
+    if (this.sys_region_id) {
+      delete this.sys_region_id;
+    }
+  }
+
+  async $beforeUpdate() {
+    if (this.sys_region_id) {
+      delete this.sys_region_id;
+    }
+  }
+
   static get relationMappings() {
     return {
       personalInfo: {
@@ -32,16 +48,18 @@ class UserAddress extends BaseModel {
           },
           to: 'user_personal_info.id'
         }
+      },
+      community: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: Community,
+        join: {
+          from: 'user_addresses.sys_community_id',
+          to: 'sys_community.id'
+        }
       }
     };
   }
 
-  /**
-   * [optional]
-   * The primary key column for the UserAddress model.
-   * 
-   * @returns {string} The primary key column for the UserAddress model.
-   */
   static get idColumn() {
     return 'id';
   }

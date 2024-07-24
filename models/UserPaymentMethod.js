@@ -1,5 +1,6 @@
 const BaseModel = require('./BaseModel');
 const UserPersonalInfo = require('./UserPersonalInfo');
+const Companies = require('./Companies');
 
 /**
  * Model UserPaymentMethod
@@ -26,6 +27,7 @@ class UserPaymentMethod extends BaseModel {
       type: 'object',
       required: [
         'user_personal_info_id',
+        'sys_companies_id',
         'payment_method',
         'bank',
         'current_account_number',
@@ -37,6 +39,7 @@ class UserPaymentMethod extends BaseModel {
       properties: {
         id: { type: 'integer' },
         user_personal_info_id: { type: 'integer' },
+        sys_companies_id: { type: 'integer'},
         payment_method: { type: 'integer' },
         bank: { type: 'integer' },
         current_account_number: { type: 'string', maxLength: 45 },
@@ -60,6 +63,14 @@ class UserPaymentMethod extends BaseModel {
         join: {
           from: 'user_payment_method.user_personal_info_id',
           to: 'user_personal_info.id'
+        }
+      },
+      company: {
+        relation: BaseModel.BelongsToOneRelation,
+        modelClass: Companies,
+        join: {
+          from: 'user_payment_method.sys_companies_id',
+          to: 'sys_companies.id'
         }
       }
     };

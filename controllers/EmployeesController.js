@@ -16,8 +16,8 @@ const UserPaymentMethod = require('../models/UserPaymentMethod');
  */
 const index = async (request, response) => {
     try {
-        const users = await UserPersonalInfo.query().whereNull('deleted_at')
-            .withGraphFetched('[socialInformation, addressInformation, civilianInformation, healthInformation, healthPension, paymentMethod]');
+        const users = await UserPersonalInfo.query()
+            .withGraphFetched('[socialInformation, addressInformation.community.province.region, civilianInformation, healthInformation, healthPension, paymentMethod.company]');
 
         return response.status(200).json({
             success: true,
@@ -32,6 +32,7 @@ const index = async (request, response) => {
     }
 };
 
+
 /**
  * Controller function to handle getting a user personal info record by ID.
  * 
@@ -43,7 +44,10 @@ const getUserById = async (request, response) => {
     const { id } = request.params;
     try {
         const user = await UserPersonalInfo.query().findById(id).whereNull('deleted_at')
-            .withGraphFetched('[socialInformation, addressInformation, civilianInformation, healthInformation, healthPension, paymentMethod]');
+            .withGraphFetched('[socialInformation, addressInformation.community.province.region, civilianInformation, healthInformation, healthPension, paymentMethod, paymentMethod.company]')
+            .modifyGraph('addressInformation.community.province.region', builder => {
+                builder.select('id as sys_regions_id');
+            });
 
         if (!user) {
             return response.status(404).json({
@@ -58,6 +62,7 @@ const getUserById = async (request, response) => {
             data: user
         });
     } catch (error) {
+        console.error(error)
         return response.status(500).json({
             success: false,
             message: error.message
@@ -146,24 +151,60 @@ const update = async (request, response) => {
             });
         }
 
-        // Actualiza los datos anidados si están presentes en la solicitud
+        const userPersonalInfoId = updatedUser.id;
+
+        // Actualiza o inserta los datos anidados si están presentes en la solicitud
+        if (civilianInformation) {
+            await updatedUser.$relatedQuery('civilianInformation').insert({
+                ...civilianInformation,
+                user_personal_info_id: userPersonalInfoId
+            }).onConflict('user_personal_info_id').merge();
+        }
+
         if (socialInformation) {
-            await updatedUser.$relatedQuery('socialInformation').patch(socialInformation);
+            await updatedUser.$relatedQuery('socialInformation').insert({
+                ...socialInformation,
+                user_personal_info_id: userPersonalInfoId
+            }).onConflict('user_personal_info_id').merge();
         }
+
         if (healthInformation) {
-            await updatedUser.$relatedQuery('healthInformation').patch(healthInformation);
+            await updatedUser.$relatedQuery('healthInformation').insert({
+                ...healthInformation,
+                user_personal_info_id: userPersonalInfoId
+            }).onConflict('user_personal_info_id').merge();
         }
-        if (addressInformation) {
+
+        if (addressInformation && addressInformation.length > 0) {
             // Primero elimina las direcciones antiguas
             await updatedUser.$relatedQuery('addressInformation').delete();
+    
+            // Procesar cada dirección para extraer y asignar valores
+            const processedAddressInformation = addressInformation.map(({ address, codigo_postal, department_number, housing_type, block, sys_community_id }) => ({
+                address,
+                codigo_postal,
+                department_number,
+                housing_type,
+                block,
+                sys_community_id
+            }));
+    
             // Luego agrega las nuevas direcciones
-            await updatedUser.$relatedQuery('addressInformation').insertGraph(addressInformation);
+            await updatedUser.$relatedQuery('addressInformation').insertGraph(processedAddressInformation);
         }
+
         if (healthPension) {
-            await updatedUser.$relatedQuery('healthPension').patch(healthPension);
+            await updatedUser.$relatedQuery('healthPension').insert({
+                ...healthPension,
+                user_personal_info_id: userPersonalInfoId
+            }).onConflict('user_personal_info_id').merge();
         }
+
         if (paymentMethod) {
-            await updatedUser.$relatedQuery('paymentMethod').patch(paymentMethod);
+            await updatedUser.$relatedQuery('paymentMethod').insert({
+                ...paymentMethod,
+                user_personal_info_id: userPersonalInfoId
+            }).onConflict('user_personal_info_id').merge();
         }
 
         return response.status(200).json({
