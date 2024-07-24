@@ -26,6 +26,7 @@ class UserPersonalInfo extends BaseModel {
         gender: { type: 'string' },
         phone: { type: 'string' },
         image: { type: 'string' },
+        status: { type: 'integer' }
       }
     };
   }

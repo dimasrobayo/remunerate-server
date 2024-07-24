@@ -117,6 +117,7 @@ const update = async (request, response) => {
         gender,
         phone,
         image,
+        status,
         civilianInformation,
         socialInformation,
         healthInformation,
@@ -141,7 +142,8 @@ const update = async (request, response) => {
             document_number,
             gender,
             phone,
-            image
+            image,
+            status
         });
 
         if (!updatedUser) {
