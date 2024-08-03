@@ -36,7 +36,7 @@ class TypeLRE extends BaseModel {
       type: 'object',
       properties: {
         id: { type: 'integer' },
-        description: { type: 'string', maxLength: 45 },
+        description: { type: 'string', maxLength: 100 },
         create_at: { type: 'string', format: 'date-time' },
         update_at: { type: 'string', format: 'date-time' }
       }

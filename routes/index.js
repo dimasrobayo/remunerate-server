@@ -1,3 +1,4 @@
+const remunerationBookRoutes = require('./remunerationBookRoutes');
 const utilsRoutes = require('./utilsRoutes');
 const userRoutes = require('./useRoutes');
 const companiesRoutes = require('./companiesRoutes');
@@ -6,20 +7,19 @@ const typesConceptsRoutes = require('./typesConceptsRoutes');
 const internarCategoriesRoutes = require('./internalCategoriesRoutes');
 const institutionsTypesRoutes = require('./institutionsTypesRoutes');
 const institutionsRoutes = require('./institutionsRoutes');
-const remunerationBookRoutes = require('./remunerationBookRoutes');
 const conceptsRoutes = require('./conceptsRoutes');
 const employeesRoutes = require('./employeesRoutes');
 
 module.exports = (app, upload) => {
-    utilsRoutes(app);
     userRoutes(app, upload);
+    remunerationBookRoutes(app);
     typesConceptsRoutes(app);
     internarCategoriesRoutes(app);
     institutionsTypesRoutes(app);
     institutionsRoutes(app);
-    listsRoutes(app);
     companiesRoutes(app);
-    remunerationBookRoutes(app);
+    listsRoutes(app);
+    utilsRoutes(app);
     conceptsRoutes(app);
     employeesRoutes(app);
 };
