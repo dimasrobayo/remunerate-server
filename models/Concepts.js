@@ -24,8 +24,11 @@ class Concept extends BaseModel {
         sys_internal_categories_id: { type: 'integer' },
         sys_libro_remuneraciones_electrico_id: { type: 'integer' },
         name: { type: 'string', maxLength: 45 },
+        variable_unique: { type: 'string', maxLength: 150},
         status: { type: 'integer' },
         comportamiento: { type: 'string', maxLength: 45 },
+        value_contract: { type: 'integer', nullable: true },
+        formula: { type: 'string', maxLength: 150, nullable: true },
         created_at: { type: 'string', format: 'date-time' },
         updated_at: { type: 'string', format: 'date-time' },
         deleted_at: { type: 'string', format: 'date-time', nullable: true }

@@ -16,6 +16,31 @@ const getAllConcepts = async (request, res) => {
       data: concepts
     });
   } catch (error) {
+    console.error('Error retrieving concepts:', error); // Agrega más detalles aquí
+    return res.status(500).json({
+      success: false,
+      message: 'Error retrieving concepts.',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Controller function to get only concepts.
+ */
+const listConcepts = async (request, res) => {
+  try {
+    const concepts = await Concepts.query()
+    .withGraphFetched('[remunerationBook]')
+    .whereNull('deleted_at');
+    
+    return res.status(200).json({
+      success: true,
+      message: 'List of all concepts.',
+      data: concepts
+    });
+  } catch (error) {
+    console.error('Error retrieving concepts:', error); // Agrega más detalles aquí
     return res.status(500).json({
       success: false,
       message: 'Error retrieving concepts.',
@@ -91,10 +116,9 @@ const createConcept = async (request, res) => {
 const updateConcept = async (request, response) => {
   try {
     const { id } = request.params;
-    console.log(request.body);
     const { attributes } = request.body;
     const updatedConcept = await Concepts.query().patchAndFetchById(id, request.body);
-
+    
     if (!updatedConcept) {
       return response.status(404).json({
         success: false,
@@ -280,6 +304,7 @@ const deleteAttribute = async (request, res) => {
 module.exports = {
     createConcept,
     getAllConcepts,
+    listConcepts,
     getConceptById,
     updateConcept,
     deleteConcept,

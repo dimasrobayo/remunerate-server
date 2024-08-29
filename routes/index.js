@@ -9,6 +9,8 @@ const institutionsTypesRoutes = require('./institutionsTypesRoutes');
 const institutionsRoutes = require('./institutionsRoutes');
 const conceptsRoutes = require('./conceptsRoutes');
 const employeesRoutes = require('./employeesRoutes');
+const contractsRoutes = require('./contractsRoutes');
+const templatesRoutes = require('./templatesRoutes');
 
 module.exports = (app, upload) => {
     userRoutes(app, upload);
@@ -22,4 +24,6 @@ module.exports = (app, upload) => {
     utilsRoutes(app);
     conceptsRoutes(app);
     employeesRoutes(app);
+    contractsRoutes(app);
+    templatesRoutes(app);
 };

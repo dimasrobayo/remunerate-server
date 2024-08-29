@@ -17,8 +17,8 @@ const UserPaymentMethod = require('../models/UserPaymentMethod');
 const index = async (request, response) => {
     try {
         const users = await UserPersonalInfo.query()
-            .withGraphFetched('[socialInformation, addressInformation.community.province.region, civilianInformation, healthInformation, healthPension, paymentMethod.company]');
-
+            .withGraphFetched('[socialInformation, addressInformation.community.province.region, civilianInformation, healthInformation, healthPension, paymentMethod.company]')
+            .whereNull('deleted_at');
         return response.status(200).json({
             success: true,
             message: 'List of users!',
@@ -32,6 +32,30 @@ const index = async (request, response) => {
     }
 };
 
+/**
+ * Controller function to handle getting employees list personal info records.
+ * 
+ * @param {Object} request The request object from Express.
+ * @param {Object} response The response object from Express.
+ * @returns {Promise<void>} Promise indicating the completion of the function.
+ */
+const list = async (request, response) => {
+    try {
+        const users = await UserPersonalInfo.query()
+            .select('id', 'name', 'lastname')
+            .whereNull('deleted_at');
+        return response.status(200).json({
+            success: true,
+            message: 'List of users!',
+            data: users
+        });
+    } catch (error) {
+        return response.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
 
 /**
  * Controller function to handle getting a user personal info record by ID.
@@ -256,6 +280,7 @@ const softDelete = async (request, response) => {
 
 module.exports = {
     index,
+    list,
     getUserById,
     create,
     update,

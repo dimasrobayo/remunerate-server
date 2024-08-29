@@ -10,7 +10,7 @@ const ValuesLists = require('../models/ValuesLists');
  */
 const getAllLists = async (request, response) => {
     try {
-        const lists = await Lists.query().withGraphFetched('values');
+        const lists = await Lists.query().withGraphFetched('values').orderBy('name');
         
         return response.status(200).json({
             success: true,

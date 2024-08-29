@@ -6,6 +6,7 @@ const UserHealthInformation = require('./UserHealthInfo');
 const UserAddress = require('./UserAddress');
 const UserHealthPension = require('./UserHealthPension');
 const UserPaymentMethod = require('./UserPaymentMethod');
+const PayrollTemplate = require('./PayrollTemplate');
 
 class UserPersonalInfo extends BaseModel {
   static get tableName() {
@@ -92,7 +93,15 @@ class UserPersonalInfo extends BaseModel {
           from: 'user_personal_info.id',
           to: 'user_payment_method.user_personal_info_id'
         }
-      }
+      },
+      payrollTemplates: {
+        relation: BaseModel.HasManyRelation,
+        modelClass: PayrollTemplate,
+        join: {
+          from: 'user_personal_info.id',
+          to: 'payroll_templates.user_personal_info_id'
+        }
+      },
     };
   }
 
