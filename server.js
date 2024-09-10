@@ -24,12 +24,10 @@ const {getTenantDatabaseConnection} = require('./middleware/tenantDbMiddleware')
 app.use(getTenantDatabaseConnection);
 
 /**
-*  Use cors middleware with the desired options
+* Importar y usar el Middleware de CORS
 */
-app.use(cors({
-    origin: 'https://localhost:3000', // Replace with your actual frontend URL
-    credentials: true,
-}));
+const corsMiddleware = require('./middleware/corsMiddleware');
+app.use(corsMiddleware);
 
 app.use(logger('dev'));
 app.use(express.json());

@@ -38,7 +38,7 @@ const getTenantDatabaseConnection = async (req, res, next) => {
     // Asegurar que la conexión se cierre cuando la respuesta termine
     res.on('finish', () => {
       if (req.db) {
-        console.log('destroy ....')
+        console.log('Destroying connection...')
         req.db.destroy();
       }
     });

@@ -14,7 +14,7 @@ const index = async (request, response) => {
         const contracts = await ContractsEmployee.query()
             .withGraphFetched(`
                 [
-                    userPersonalInfo, 
+                    userPersonalInfo.paymentMethod.company, 
                     agrupacionSeguridad, 
                     area_employees, 
                     cargo_employees, 

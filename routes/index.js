@@ -11,6 +11,7 @@ const conceptsRoutes = require('./conceptsRoutes');
 const employeesRoutes = require('./employeesRoutes');
 const contractsRoutes = require('./contractsRoutes');
 const templatesRoutes = require('./templatesRoutes');
+const scrapingRoutes = require('./scrapingRoutes');
 
 module.exports = (app, upload) => {
     userRoutes(app, upload);
@@ -26,4 +27,5 @@ module.exports = (app, upload) => {
     employeesRoutes(app);
     contractsRoutes(app);
     templatesRoutes(app);
+    scrapingRoutes(app);
 };
