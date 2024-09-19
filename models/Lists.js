@@ -1,5 +1,4 @@
 const BaseModel = require('./BaseModel');
-const ValuesLists = require('./ValuesLists');
 
 /**
  * Model for the sys_lists table.
@@ -53,6 +52,8 @@ class Lists extends BaseModel {
    * @returns {Object} The relation mappings.
    */
   static get relationMappings() {
+    const ValuesLists = require('./ValuesLists');
+
     return {
       values: {
         relation: BaseModel.HasManyRelation,

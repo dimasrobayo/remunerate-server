@@ -55,9 +55,9 @@ const login = async (request, response) => {
                 civilian_information: user.personalInfo.civilianInformation,
                 social_information: user.personalInfo.socialInformation,
                 health_information: user.personalInfo.healthInformation,
-                address_information: user.personalInfo.addressInformation,
+                address_information: user.personalInfo.addressInformation
             }
-    
+            
             return response.status(200).json({
                 success: true,
                 message: 'El usuario fue autenticado',

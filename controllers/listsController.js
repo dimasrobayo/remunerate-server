@@ -97,7 +97,7 @@ const getListValuesById = async (request, response) => {
         const { id } = request.params;
         
         // Verificar que el ID esté presente
-        if (!id) {
+        if (!id || isNaN(id)) {
             return response.status(400).json({
                 success: false,
                 message: 'ID de la lista es requerido.'
@@ -106,11 +106,11 @@ const getListValuesById = async (request, response) => {
         
         // Consultar la lista específica por ID junto con sus valores asociados
         const list = await Lists.query()
-            .findById(id)
-            .withGraphFetched('values')
-            .modifyGraph('values', builder => {
-                builder.whereNull('deleted_at');
-            });
+        .findById(id)
+        .withGraphFetched('values')
+        .modifyGraph('values', builder => {
+            builder.whereNull('deleted_at');
+        });
         
         // Verificar que la lista exista
         if (!list) {
@@ -126,6 +126,7 @@ const getListValuesById = async (request, response) => {
             data: list
         });
     } catch (error) {
+        console.log(error);
         return response.status(500).json({
             success: false,
             message: 'Error al recuperar la lista.',

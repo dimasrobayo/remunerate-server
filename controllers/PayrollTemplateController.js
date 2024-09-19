@@ -37,13 +37,6 @@ class PayrollTemplateController {
       .findById(id)
       .withGraphFetched('payrollTemplates.[payrollTemplateType, sysConcept.remunerationBook.typeLRE]');
 
-      
-      const conceptsData = payrollTemplate.payrollTemplates.map(concept => {
-        if(concept.sysConcept.remunerationBook.code === '2101'){
-          console.log(concept.sysConcept.remunerationBook.code)
-        }
-      })
-  
       if (!payrollTemplate) {
         return res.status(404).json({
           success: false,

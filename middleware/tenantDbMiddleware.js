@@ -47,6 +47,9 @@ const getTenantDatabaseConnection = async (req, res, next) => {
     req.dbInfo = {
         domain: domain,
         dbSchool_name: tenant.database_name,
+        rut_tenant: tenant.rut,
+        date_start: tenant.date_start,
+        date_end: tenant.date_end
     };
 
     next();
