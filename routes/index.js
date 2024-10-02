@@ -12,6 +12,7 @@ const employeesRoutes = require('./employeesRoutes');
 const contractsRoutes = require('./contractsRoutes');
 const templatesRoutes = require('./templatesRoutes');
 const scrapingRoutes = require('./scrapingRoutes');
+const calculateRoutes = require('./calculateRoutes');
 
 module.exports = (app, upload) => {
     userRoutes(app, upload);
@@ -28,4 +29,5 @@ module.exports = (app, upload) => {
     contractsRoutes(app);
     templatesRoutes(app);
     scrapingRoutes(app);
+    calculateRoutes(app);
 };

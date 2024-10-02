@@ -7,7 +7,6 @@ const UserAddress = require('./UserAddress');
 const UserHealthPension = require('./UserHealthPension');
 const UserPaymentMethod = require('./UserPaymentMethod');
 const PayrollTemplate = require('./PayrollTemplate');
-const ContractsEmployee = require('./ContractsEmployee');
 
 class UserPersonalInfo extends BaseModel {
   static get tableName() {

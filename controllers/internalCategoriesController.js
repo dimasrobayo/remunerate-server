@@ -90,7 +90,6 @@ const createInternalCategory = async (request, response) => {
 const updateInternalCategory = async (request, response) => {
   const { id } = request.params;
   const { name } = request.body;
-  console.log(request.body)
 
   try {
     const updatedInternalCategory = await InternalCategory.query().patchAndFetchById(id, {
